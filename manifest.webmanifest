@@ -1,0 +1,16 @@
+{
+  "name": "Car Photo Shot List",
+  "short_name": "Car Shots",
+  "description": "Every photo buyers look for when you sell a used car, with a guide camera, damage map, plate blur and ad writer.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#2b2e33",
+  "theme_color": "#2b2e33",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

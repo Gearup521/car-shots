@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Car Photo Shot List</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2b2e33">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday tool, practical and calm
+   IDEA a lot attendant's shot sheet: the car parked on asphalt with camera spots marked around it
+   PICTURE top-down car on asphalt, red camera pins at every angle that turn white as shots are taken; damage marked as diamonds
+   COLOUR asphalt field, white paint lines, pin red, ink on white for the working list
+   TYPE Barlow Condensed 700 + Barlow
+   LAYOUT laptop: sticky asphalt column left (title, map, progress), car setup, list, photos and ad right; phone: asphalt band, sticky progress bar, then the rest */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#121417);--ink:light-dark(#15171a,#eef0f2);--mute:light-dark(#596068,#a3a9b1);--line:light-dark(#dfe2e6,#2f3339);--soft:light-dark(#f2f3f5,#1a1d21);--red:light-dark(#d02a1c,#ff5c4a);--asph:light-dark(#2b2e33,#1d2024);--pin:#ef3b2a;--paint:#f3f4f5;--dim:#bfc5cc;--sk1:light-dark(#a3aab3,#5f6670);--sk2:light-dark(#858c95,#4b525b);--sk3:light-dark(#dbe3eb,#33404b)}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 Barlow,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:"Barlow Condensed",Barlow,sans-serif;font-weight:700;line-height:1.05;letter-spacing:-.01em;margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+select,input,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;min-height:44px;padding:8px 10px;width:100%}
+textarea{line-height:1.5;resize:vertical}
+select:hover,input:hover,textarea:hover{border-color:var(--sk1)}
+select:focus,input:focus,textarea:focus{border-color:var(--ink);outline:none}
+.app{display:grid;grid-template-columns:minmax(360px,.85fr) minmax(0,1.15fr)}
+.left{position:sticky;top:0;height:100svh;overflow:auto;background:var(--asph);color:var(--paint);display:flex;flex-direction:column;gap:18px;padding:clamp(24px,3vw,40px) clamp(16px,3vw,40px)}
+.head h1{font-size:clamp(32px,3.4vw,46px);text-wrap:balance}
+.head p{margin:10px 0 0;color:var(--dim);max-width:46ch}
+.map{flex:1;display:flex;flex-direction:column;gap:8px;min-height:300px}
+.fig{position:relative;flex:1;min-height:280px;border-radius:12px}
+.fig.marking{outline:2px dashed var(--pin);outline-offset:-2px}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+#map.marking{cursor:crosshair}
+.mapbar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.cap{font-size:14px;color:var(--dim);margin:0;max-width:52ch}
+.ghost{min-height:44px;padding:0 14px;border-radius:10px;border:1.5px solid rgba(255,255,255,.32);background:transparent;color:var(--paint);font-weight:600;cursor:pointer;white-space:nowrap;flex:none}
+.ghost:hover{border-color:#fff}
+.ghost[aria-pressed=true]{background:var(--pin);border-color:var(--pin)}
+.prog{display:grid;gap:10px;color:var(--paint)}
+.pnum{display:flex;align-items:baseline;gap:6px;font-family:"Barlow Condensed",sans-serif;font-weight:700;white-space:nowrap}
+.pnum b{font-size:46px;line-height:1}
+.pnum .of{font-size:22px;color:var(--dim)}
+.pnum small{font:500 14px Barlow,sans-serif;color:var(--dim);margin-left:4px}
+.meter{height:8px;border-radius:8px;background:rgba(255,255,255,.14);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--pin);transition:width .35s ease}
+.pbtns{display:flex;gap:8px;flex-wrap:wrap}
+.pbtns button{min-height:44px;padding:0 16px;border-radius:10px;border:1.5px solid rgba(255,255,255,.32);background:transparent;color:var(--paint);font-weight:600;cursor:pointer;white-space:nowrap}
+.pbtns button:hover{border-color:#fff}
+.arm{background:var(--pin)!important;border-color:var(--pin)!important;color:#fff!important}
+.right{padding:clamp(24px,3vw,44px) max(4vw,16px);display:flex;flex-direction:column;gap:34px;max-width:820px;width:100%}
+.right h2{font-size:22px;margin-bottom:10px}
+.jump{display:flex;gap:8px;flex-wrap:wrap}
+.jump a{min-height:40px;display:inline-flex;align-items:center;padding:0 16px;border-radius:999px;background:var(--soft);color:var(--ink);text-decoration:none;font-weight:600}
+.jump a:hover{background:var(--line)}
+.setup{display:grid;gap:22px}
+.carrow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.seg.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.opt,.chip{min-height:44px;border:1.5px solid var(--line);background:var(--bg);border-radius:10px;font-weight:600;cursor:pointer;padding:6px 12px;line-height:1.2}
+.opt:hover,.chip:hover{border-color:var(--ink)}
+.opt span{display:block;font-size:14px;font-weight:500;opacity:.75}
+.opt[aria-pressed=true],.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border-radius:999px;padding:6px 16px 6px 12px}
+.chip.plus::before{content:"+";display:inline-block;width:1.1em;font-weight:700}
+.chip.plus[aria-pressed=true]::before{content:"✓"}
+.tips{background:var(--soft);border-radius:14px;padding:20px 22px}
+.tips ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 28px;margin:0;padding:0;list-style:none}
+.tips li{position:relative;padding-left:16px;font-size:15px;line-height:1.45}
+.tips li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;background:var(--red);border-radius:1px}
+.note{color:var(--mute);font-size:14px;margin:0}
+.help{border:2px solid var(--red);border-radius:14px;padding:16px 18px;margin-top:14px}
+.help h3{font-size:22px;margin-bottom:6px}
+.help p{margin:0 0 8px;font-size:15px}
+.help a.act{display:inline-flex;align-items:center;text-decoration:none}
+.ex{margin-top:6px;color:var(--red);font-weight:500;font-size:14px}
+.grp{margin-top:26px}
+.grp h3{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:22px;padding-bottom:8px;border-bottom:2px solid var(--ink)}
+.grp h3 span{font:500 14px Barlow,sans-serif;color:var(--mute);white-space:nowrap}
+ol{list-style:none;margin:0;padding:0}
+.shot{display:grid;grid-template-columns:44px minmax(0,1fr) auto;column-gap:10px;align-items:center;padding:10px 4px 10px 0;border-bottom:1px solid var(--line);border-radius:4px}
+.tick{width:44px;height:44px;display:grid;place-items:center;align-self:start;background:none;border:0;padding:0;cursor:pointer;border-radius:50%}
+.txt{display:block;text-align:left;background:none;border:0;padding:6px 0;cursor:pointer;border-radius:8px;width:100%;font:inherit;color:inherit}
+.txt:hover .nm b{text-decoration:underline}
+.num{width:34px;height:34px;border-radius:50%;border:2px solid var(--red);color:var(--red);display:grid;place-items:center;font:700 16px "Barlow Condensed",sans-serif}
+.num svg{width:16px;height:16px}
+.done .num{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.nm b{font-weight:600;line-height:1.3}
+.nm em{font-style:normal;font-size:14px;font-weight:600;color:var(--red);margin-left:8px;white-space:nowrap}
+.done .nm b{color:var(--mute)}
+.tip{display:block;color:var(--mute);font-size:14px;line-height:1.45;margin-top:3px}
+.warn{display:block;color:var(--red);font-size:14px;font-weight:600;margin-top:4px}
+.rm{grid-column:2;justify-self:start;background:none;border:0;color:var(--mute);font-size:14px;text-decoration:underline;cursor:pointer;padding:4px 0;min-height:36px}
+.slot{position:relative;width:78px;height:52px;border-radius:10px;border:1.5px dashed var(--sk1);display:block;cursor:pointer;overflow:hidden;background:var(--soft);padding:0;flex:none}
+.slot:hover{border-color:var(--ink)}
+.slot:focus-within,.slot:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.slot.has{border:0}
+.slot input{position:absolute;opacity:0;width:1px;height:1px}
+.slot img{width:100%;height:100%;object-fit:cover;display:block}
+.sk{width:100%;height:100%;display:block}
+.sk .b{fill:var(--sk1)}
+.sk .b2{fill:var(--sk2)}
+.sk .w{fill:var(--sk3)}
+.sk .t{fill:var(--ink)}
+.sk .h{fill:var(--sk1)}
+.sk .o{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round}
+.sk .l{fill:#ffe7a3}
+.sk .tl{fill:var(--red)}
+.sk .gl{stroke:var(--sk1);stroke-width:1;fill:none}
+.sk .mk{stroke:var(--red);stroke-width:2.2;stroke-linecap:round;fill:none}
+.cb{position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center}
+.cb svg{width:13px;height:13px}
+.wb{position:absolute;right:4px;top:4px;width:20px;height:20px;border-radius:50%;background:var(--pin);color:#fff;font:700 14px/20px Barlow,sans-serif;text-align:center;font-style:normal}
+.sites{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 10px}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:14px}
+.gcard{position:relative;border:0;padding:0;background:none;text-align:left;cursor:pointer;border-radius:10px}
+.gcard img{width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:10px;display:block;background:var(--soft)}
+.gn{position:absolute;top:6px;left:6px;background:var(--ink);color:var(--bg);font:700 14px "Barlow Condensed",sans-serif;min-width:24px;height:24px;border-radius:12px;display:grid;place-items:center;padding:0 7px}
+.gt{display:block;font-size:14px;margin-top:5px;line-height:1.3}
+.gcard.out img{opacity:.4}
+.gcard.out .gn{background:var(--sk2)}
+.gsub{font-size:14px;font-weight:600;color:var(--mute);margin:18px 0 0}
+.empty{border:1.5px dashed var(--line);border-radius:12px;padding:22px;color:var(--mute);text-align:center;margin-top:14px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.act{min-height:44px;padding:0 18px;border-radius:10px;border:1.5px solid var(--ink);background:var(--ink);color:var(--bg);font-weight:600;cursor:pointer}
+.act.sec{background:var(--bg);color:var(--ink);border-color:var(--line)}
+.act.sec:hover{border-color:var(--ink)}
+.act:disabled{opacity:.55;cursor:default}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+.fl label{display:block;font-size:14px;font-weight:600;margin-bottom:4px}
+.full{grid-column:1/-1}
+.pair{display:grid;grid-template-columns:minmax(0,1fr) 5.2em;gap:6px}
+#adOut{margin-top:16px;font-size:15px;min-height:300px}
+.ask{background:var(--soft);border-radius:14px;padding:16px 20px;margin-top:16px}
+.ask h3{font-size:22px;margin-bottom:6px}
+.ask ul{margin:0;padding-left:20px}
+.ask li{font-size:15px}
+.foot{font-size:14px;color:var(--mute);margin:0;border-top:1px solid var(--line);padding-top:16px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:500;z-index:80;max-width:calc(100% - 32px);box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.toast[hidden]{display:none}
+.modal{position:fixed;inset:0;z-index:60;background:rgba(12,13,15,.76);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal[hidden]{display:none}
+.vcard,.scard{background:var(--bg);color:var(--ink);border-radius:16px;width:min(920px,100%);max-height:calc(100svh - 32px);overflow:auto;padding:18px 20px 20px}
+.scard{width:min(460px,100%)}
+.vhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.vhead h2{font-size:22px}
+.x{width:44px;height:44px;flex:none;border-radius:50%;border:1.5px solid var(--line);background:var(--bg);font-size:24px;line-height:1;cursor:pointer}
+.vimg{background:#0f1012;border-radius:10px;display:grid;place-items:center;overflow:hidden}
+#vCan{display:block;max-width:100%;max-height:56svh;width:auto;height:auto}
+#vCan.drawing{touch-action:none;cursor:crosshair}
+.vhint{font-size:14px;color:var(--mute);margin:10px 0 0}
+.vq{margin-top:10px;font-size:15px}
+.vq p{margin:4px 0 0}
+.vq .bad{color:var(--red);font-weight:600}
+.vact{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.vact button,.vact .btn{min-height:44px;padding:0 14px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);font-weight:600;cursor:pointer;display:inline-flex;align-items:center}
+.vact button:hover,.vact .btn:hover{border-color:var(--ink)}
+.vact .primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.vh{position:absolute;opacity:0;width:1px;height:1px}
+.camv{position:fixed;inset:0;z-index:70;background:#000;color:#fff;overflow:hidden}
+.camv video,.camv img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+.camghost{position:absolute;pointer-events:none}
+.camghost .sk{width:100%;height:100%}
+.camghost .b,.camghost .b2,.camghost .w,.camghost .t,.camghost .h{fill:rgba(255,255,255,.14);stroke:rgba(255,255,255,.9);stroke-width:.5}
+.camghost .l,.camghost .tl{fill:rgba(255,255,255,.55)}
+.camghost .o,.camghost .mk{stroke:rgba(255,255,255,.9)}
+.camghost .gl{stroke:rgba(255,255,255,.7);stroke-dasharray:2 2}
+.camtop{position:absolute;left:0;right:0;top:0;display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:14px 16px;background:linear-gradient(rgba(0,0,0,.65),rgba(0,0,0,0))}
+.camtop b{display:block;font:700 20px "Barlow Condensed",sans-serif}
+.camtop span{display:block;font-size:14px;color:#d7dbe0;max-width:46ch}
+.camtop .x{background:rgba(0,0,0,.4);color:#fff;border-color:rgba(255,255,255,.4)}
+.cambar{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:space-around;gap:12px;padding:18px 16px 26px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.7))}
+.cambar button{min-height:48px;padding:0 16px;border-radius:12px;border:1.5px solid rgba(255,255,255,.5);background:rgba(0,0,0,.35);color:#fff;font-weight:600;cursor:pointer}
+.cambar .primary{background:#fff;color:#15171a;border-color:#fff}
+.shutter{width:76px;height:76px;min-height:76px!important;border-radius:50%!important;border:5px solid #fff!important;background:var(--pin)!important;padding:0!important;flex:none}
+.shutter:active{transform:scale(.94)}
+.camturn{position:absolute;left:50%;bottom:132px;transform:translateX(-50%);background:rgba(0,0,0,.6);padding:10px 16px;border-radius:12px;font-weight:600;text-align:center}
+.inst{margin-top:14px}
+.pkfig{margin:12px auto 8px;border-radius:12px;overflow:hidden;background:var(--soft);aspect-ratio:3/2;max-height:230px}
+.pkbtns{display:grid;gap:8px;margin-top:16px}
+.pkbtns .act{min-height:48px}
+.kinds{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}
+.kinds button:last-child{grid-column:1/-1}
+.srow{display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between}
+.spk circle{fill:#fff}
+.paint{stroke:var(--paint);stroke-width:3;opacity:.5;fill:none}
+.shd{fill:#000;opacity:.35}
+.crease{stroke:rgba(0,0,0,.13);stroke-width:1.5;fill:none}
+.outline{fill:none;stroke:var(--pin);stroke-width:2;stroke-dasharray:6 5}
+.pin{cursor:pointer;transform-box:fill-box;transform-origin:center}
+.pin:focus{outline:none}
+.pin .dot,.pin .stk{fill:var(--pin);stroke:#fff;stroke-width:2}
+.pin .stk{opacity:.7}
+.pin .aim{fill:var(--pin)}
+.pin text{fill:#fff;font:700 14px "Barlow Condensed",sans-serif;text-anchor:middle}
+.pin:hover .dot{stroke-width:3}
+.pin:focus-visible .dot{stroke:#9fd2ff;stroke-width:4}
+.pin.done .dot,.pin.done .aim{fill:#fff}
+.ck{fill:none;stroke:#15171a;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.pop{animation:pop .5s ease-out}
+@keyframes pop{0%{transform:scale(.5)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+.flash{animation:fl 1.4s ease-out}
+@keyframes fl{0%{background:color-mix(in srgb,var(--red) 20%,transparent)}100%{background:transparent}}
+@media(prefers-reduced-motion:reduce){.pop,.flash{animation:none}.meter i{transition:none}}
+@media(max-width:899px){
+.app{display:flex;flex-direction:column}
+.left{display:contents}
+.head{background:var(--asph);color:var(--paint);padding:26px 16px 6px}
+.map{background:var(--asph);padding:0 12px 14px;min-height:0;flex:none}
+.fig{flex:none;height:clamp(250px,64vw,380px);min-height:0}
+.mapbar{padding:0 4px}
+.prog{position:sticky;top:0;z-index:5;background:var(--asph);grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:8px 16px 11px;box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.pnum b{font-size:30px}
+.meter{position:absolute;left:0;right:0;bottom:0;height:4px;border-radius:0}
+.pbtns{flex-wrap:nowrap;gap:6px}
+.pbtns button{padding:0 12px;font-size:15px}
+.right{max-width:none}
+}
+@media(max-width:600px){
+.tips ul{grid-template-columns:minmax(0,1fr)}
+.tips{padding:18px}
+.modal{padding:0;align-items:flex-end}
+.vcard,.scard{border-radius:16px 16px 0 0;max-height:94svh;padding:16px}
+.carrow{grid-template-columns:minmax(0,1fr) auto}
+.carrow select{grid-column:1/-1}
+}
+@media(max-width:420px){.pnum small{display:none}.fgrid{gap:10px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="left">
+    <div class="head">
+      <h1>Used car photo shot list</h1>
+      <p>Pick the vehicle and what it comes with. You get every photo buyers look for, in the order to shoot them.</p>
+      <button class="ghost inst" type="button" id="installBtn" hidden>Install app</button>
+    </div>
+    <div class="map">
+      <div class="fig" id="fig"><svg id="map" role="group" aria-label="Car seen from above with camera positions"></svg></div>
+      <div class="mapbar">
+        <p class="cap" id="cap">Seen from above, front to the right, driver side on top. Red pins are shots still to take; tap one to jump to it.</p>
+        <button class="ghost" type="button" id="markBtn" aria-pressed="false">Mark damage</button>
+      </div>
+    </div>
+    <div class="prog" id="prog">
+      <div class="pnum"><b id="pDone">0</b><span class="of">/ <span id="pTot">0</span></span><small>shots done</small></div>
+      <div class="meter"><i id="pBar"></i></div>
+      <div class="pbtns"><button id="copy" type="button">Copy list</button><button id="clear" type="button">Clear checks</button></div>
+    </div>
+  </aside>
+
+  <main class="right">
+    <nav class="jump" aria-label="Sections"><a href="#setup">Car</a><a href="#shots">Shots</a><a href="#photos">Photos</a><a href="#ad">Ad</a></nav>
+
+    <section class="setup" id="setup">
+      <div>
+        <h2>Car</h2>
+        <div class="carrow">
+          <select id="carSel" aria-label="Which car"></select>
+          <button class="opt" type="button" id="addCar">Add a car</button>
+          <button class="opt" type="button" id="delCar">Delete</button>
+        </div>
+      </div>
+      <div>
+        <h2>Vehicle</h2>
+        <div class="seg" id="types">
+          <button class="opt" type="button" id="t-sedan" data-type="sedan">Sedan</button>
+          <button class="opt" type="button" id="t-suv" data-type="suv">SUV</button>
+          <button class="opt" type="button" id="t-truck" data-type="truck">Pickup</button>
+          <button class="opt" type="button" id="t-van" data-type="van">Minivan</button>
+          <button class="opt" type="button" id="t-coupe" data-type="coupe">Coupe</button>
+          <button class="opt" type="button" id="t-ev" data-type="ev">EV / hybrid</button>
+        </div>
+      </div>
+      <div>
+        <h2>How thorough</h2>
+        <div class="seg two" id="levels">
+          <button class="opt" type="button" id="l-ess" data-level="ess">Essentials<span id="cEss"></span></button>
+          <button class="opt" type="button" id="l-full" data-level="full">Complete<span id="cFull"></span></button>
+        </div>
+      </div>
+      <div>
+        <h2>It comes with</h2>
+        <div class="chips" id="feats">
+          <button class="chip plus" type="button" id="f-sunroof" data-f="sunroof">Sunroof</button>
+          <button class="chip plus" type="button" id="f-3row" data-f="3row">Third-row seats</button>
+          <button class="chip plus" type="button" id="f-wheels" data-f="wheels">Aftermarket wheels</button>
+          <button class="chip plus" type="button" id="f-tires2" data-f="tires2">Extra set of tires</button>
+          <button class="chip plus" type="button" id="f-tow" data-f="tow">Tow hitch</button>
+          <button class="chip plus" type="button" id="f-heater" data-f="heater">Block heater</button>
+          <button class="chip plus" type="button" id="f-remote" data-f="remote">Remote start</button>
+          <button class="chip plus" type="button" id="f-screen" data-f="screen">Touchscreen</button>
+          <button class="chip plus" type="button" id="f-audio" data-f="audio">Premium audio</button>
+          <button class="chip plus" type="button" id="f-leather" data-f="leather">Leather seats</button>
+          <button class="chip plus" type="button" id="f-heated" data-f="heated">Heated seats</button>
+          <button class="chip plus" type="button" id="f-records" data-f="records">Service records</button>
+          <button class="chip plus" type="button" id="f-mods" data-f="mods">Modifications</button>
+          <button class="chip plus" type="button" id="f-damage" data-f="damage">Dents, rust or damage</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="tips">
+      <h2>Before you shoot</h2>
+      <ul>
+        <li>Wash and vacuum it, then take out every personal item, phone mount and air freshener.</li>
+        <li>Brush off all snow and slush. Buyers assume it is hiding something.</li>
+        <li>Shoot in open shade or the hour before sunset. Noon sun means glare and hard shadows.</li>
+        <li>Pick a plain background: an empty lot or a blank wall, with no other cars in frame.</li>
+        <li>Hold the phone sideways and leave a little space around the whole car.</li>
+        <li>Lead the listing with your cover photo, then post the rest in this order.</li>
+      </ul>
+    </section>
+
+    <section id="shots">
+      <h2>Shots to take</h2>
+      <p class="note">Tap a shot to take or choose its photo; the sketch shows roughly how to frame it. Tap the number to tick a shot off without a photo.</p>
+      <p class="ex" id="ex">Opened with an example: a 2016 SUV with three shots ticked, one rust spot marked and sample ad details. Change anything, or add a car, to start your own.</p>
+      <div class="help" id="pickHelp" role="alert" hidden>
+        <h3>The camera didn't open</h3>
+        <p>Check that Chrome is allowed to use the camera and photos in your phone's settings (Settings, Apps, Chrome, Permissions), then try again.</p>
+        <div class="row"><button class="act sec" type="button" id="hideHelp">Hide</button></div>
+      </div>
+      <div id="list"></div>
+    </section>
+
+    <section id="photos">
+      <h2>Listing photos</h2>
+      <p class="note">Your photos in the order to post them, cover photo first. Pick where you are listing.</p>
+      <div class="sites" id="sites">
+        <button class="chip" type="button" id="s-fb" data-site="fb">Facebook Marketplace</button>
+        <button class="chip" type="button" id="s-kj" data-site="kj">Kijiji</button>
+        <button class="chip" type="button" id="s-at" data-site="at">AutoTrader.ca</button>
+        <button class="chip" type="button" id="s-cl" data-site="cl">Craigslist</button>
+        <button class="chip" type="button" id="s-all" data-site="all">No limit</button>
+      </div>
+      <p class="note" id="siteNote"></p>
+      <div id="gal"></div>
+      <p class="note" id="miss" style="margin-top:12px"></p>
+      <div class="row" id="zipRow" hidden><button class="act" type="button" id="shareBtn" hidden>Share photos</button><button class="act sec" type="button" id="zipBtn">Save as one zip file</button><span class="note" id="zipMsg"></span></div>
+    </section>
+
+    <section id="ad">
+      <h2>Ad writer</h2>
+      <p class="note" style="margin-bottom:14px">Fill in what you know. The ad updates as you type, and you can edit it directly.</p>
+      <div class="fgrid" id="adForm">
+        <div class="fl"><label for="ad-year">Year</label><input id="ad-year" data-k="year" inputmode="numeric" autocomplete="off"></div>
+        <div class="fl"><label for="ad-make">Make</label><input id="ad-make" data-k="make" autocomplete="off"></div>
+        <div class="fl"><label for="ad-model">Model</label><input id="ad-model" data-k="model" autocomplete="off"></div>
+        <div class="fl"><label for="ad-trim">Trim</label><input id="ad-trim" data-k="trim" autocomplete="off"></div>
+        <div class="fl"><label for="ad-km">Odometer</label><div class="pair"><input id="ad-km" data-k="km" inputmode="numeric" autocomplete="off"><select id="ad-unit" data-k="unit" aria-label="Odometer unit"><option value="km">km</option><option value="miles">miles</option></select></div></div>
+        <div class="fl"><label for="ad-price">Asking price ($)</label><input id="ad-price" data-k="price" inputmode="numeric" autocomplete="off"></div>
+        <div class="fl"><label for="ad-colour">Colour</label><input id="ad-colour" data-k="colour" autocomplete="off"></div>
+        <div class="fl"><label for="ad-trans">Transmission</label><select id="ad-trans" data-k="trans"><option value="">Not set</option><option>Automatic</option><option>Manual</option></select></div>
+        <div class="fl"><label for="ad-drive">Drivetrain</label><select id="ad-drive" data-k="drive"><option value="">Not set</option><option>FWD</option><option>RWD</option><option>AWD</option><option>4x4</option></select></div>
+        <div class="fl"><label for="ad-owners">Owners</label><select id="ad-owners" data-k="owners"><option value="">Not set</option><option value="1">1</option><option value="2">2</option><option value="3">3 or more</option></select></div>
+        <div class="fl"><label for="ad-acc">Accident history</label><select id="ad-acc" data-k="acc"><option value="">Not set</option><option value="none">No accidents</option><option value="minor">Minor, repaired</option><option value="major">Accident, details on request</option></select></div>
+        <div class="fl"><label for="ad-title">Loan or title</label><select id="ad-title" data-k="title"><option value="">Not set</option><option value="paid">Paid off, no liens</option><option value="clean">Clean title</option><option value="financed">Still financed</option></select></div>
+        <div class="fl full"><label for="ad-reason">Reason for selling</label><input id="ad-reason" data-k="reason" autocomplete="off"></div>
+        <div class="fl"><label for="ad-loc">Town or area</label><input id="ad-loc" data-k="loc" autocomplete="off"></div>
+        <div class="fl"><label for="ad-vin">VIN (optional)</label><input id="ad-vin" data-k="vin" autocomplete="off" spellcheck="false"></div>
+        <div class="fl full"><label for="ad-notes">Anything else</label><textarea id="ad-notes" data-k="notes" rows="2"></textarea></div>
+      </div>
+      <textarea id="adOut" aria-label="Your ad" rows="14"></textarea>
+      <div class="row">
+        <button class="act" type="button" id="adCopy">Copy ad</button>
+        <button class="act sec" type="button" id="adReset" hidden>Rebuild from details</button>
+        <span class="note" id="adMsg"></span>
+      </div>
+      <div class="ask"><h3>Buyers will ask</h3><ul id="askList"></ul></div>
+    </section>
+
+    <p class="foot" id="foot">Photos and car details stay on this phone and are never uploaded. Location data is stripped from each photo when you add it.</p>
+  </main>
+</div>
+
+<div class="modal" id="sheet" hidden>
+  <div class="scard" role="dialog" aria-modal="true" aria-labelledby="sTitle">
+    <h2 id="sTitle">Damage</h2>
+    <p class="note" id="sSub">What is it? This adds a wide shot and a close-up.</p>
+    <div class="kinds" id="kinds">
+      <button class="opt" type="button" data-kind="dent">Dent</button>
+      <button class="opt" type="button" data-kind="scratch">Scratch</button>
+      <button class="opt" type="button" data-kind="rust">Rust</button>
+      <button class="opt" type="button" data-kind="chip">Chip or crack</button>
+      <button class="opt" type="button" data-kind="other">Other wear</button>
+    </div>
+    <div class="srow"><button class="act sec" type="button" id="sDel" hidden>Remove this mark</button><button class="act sec" type="button" id="sCancel">Cancel</button></div>
+  </div>
+</div>
+
+<div class="modal" id="viewer" hidden>
+  <div class="vcard" role="dialog" aria-modal="true" aria-labelledby="vTitle">
+    <div class="vhead"><h2 id="vTitle">Photo</h2><button class="x" type="button" id="vClose" aria-label="Close">×</button></div>
+    <div class="vimg"><canvas id="vCan" width="10" height="10"></canvas></div>
+    <p class="vhint" id="vHint"></p>
+    <div class="vq" id="vQ"></div>
+    <div class="vact" id="vAct">
+      <button type="button" id="vBlur">Blur licence plate</button>
+      <button type="button" id="vCam">Retake</button><button type="button" id="vGal">Choose another</button>
+      <button type="button" id="vSave" hidden>Save to device</button>
+      <button type="button" id="vRestore" hidden>Undo edits</button>
+      <button type="button" id="vDel">Remove photo</button>
+    </div>
+    <div class="vact" id="vBlurAct" hidden>
+      <button type="button" class="primary" id="vApply">Blur the boxes</button>
+      <button type="button" id="vUndoBox">Undo last box</button>
+      <button type="button" id="vCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+<div class="modal" id="pickSheet" hidden>
+  <div class="scard" role="dialog" aria-modal="true" aria-labelledby="pkTitle">
+    <h2 id="pkTitle">Photo</h2>
+    <div class="pkfig" id="pkFig"></div>
+    <p class="note" id="pkTip"></p>
+    <div class="pkbtns">
+      <button class="act" type="button" id="pkGuide">Take photo with guide</button>
+      <button class="act sec" type="button" id="pkCam">Use camera app</button>
+      <button class="act sec" type="button" id="pkGal">Choose from gallery</button>
+      <button class="act sec" type="button" id="pkCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+<div class="camv" id="camView" hidden role="dialog" aria-modal="true" aria-labelledby="camTitle">
+  <video id="camVid" playsinline muted autoplay></video>
+  <img id="camStill" alt="" hidden>
+  <div class="camghost" id="camGhost"></div>
+  <div class="camturn" id="camTurn" hidden>Turn your phone sideways for this shot</div>
+  <div class="camtop"><div><b id="camTitle">Photo</b><span id="camHint">Line the car up with the outline.</span></div><button class="x" type="button" id="camClose" aria-label="Close camera">×</button></div>
+  <div class="cambar" id="camLive"><button type="button" id="camGal">Gallery</button><button class="shutter" type="button" id="camShot" aria-label="Take photo"></button><button type="button" id="camSys">Camera app</button></div>
+  <div class="cambar" id="camReview" hidden><button type="button" id="camRetake">Retake</button><button class="primary" type="button" id="camUse">Use photo</button></div>
+</div>
+<input type="file" id="camIn" class="vh" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
+<input type="file" id="galIn" class="vh" accept="image/*" tabindex="-1" aria-hidden="true">
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+{
+const TYPES={
+  sedan:{l:"Sedan",ad:"sedan",len:1,wid:.43,ws0:.23,ws1:.11,re:-.2,rg:-.3,sp:{eng:.37,cf:.04,cr:-.13,tr:-.4}},
+  suv:{l:"SUV",ad:"SUV",len:.98,wid:.46,ws0:.3,ws1:.2,re:-.36,rg:-.43,sp:{eng:.4,cf:.1,cr:-.1,tr:-.33}},
+  truck:{l:"Pickup",ad:"pickup truck",len:1.06,wid:.45,ws0:.28,ws1:.18,re:-.06,rg:-.1,bed:-.13,sp:{eng:.39,cf:.115,cr:-.035,tr:-.3}},
+  van:{l:"Minivan",ad:"minivan",len:1.02,wid:.47,ws0:.38,ws1:.24,re:-.42,rg:-.47,sp:{eng:.44,cf:.14,cr:-.08,tr:-.32}},
+  coupe:{l:"Coupe",ad:"coupe",len:.94,wid:.44,ws0:.2,ws1:.06,re:-.16,rg:-.28,sp:{eng:.35,cf:-.01,cr:-.15,tr:-.4}},
+  ev:{l:"EV / hybrid",ad:"electric vehicle",len:1,wid:.44,ws0:.28,ws1:.16,re:-.22,rg:-.32,glass:1,sp:{eng:.39,cf:.04,cr:-.13,tr:-.41}}
+};
+const GROUPS=[["out","Outside"],["whl","Wheels and tires"],["in","Inside"],["eng","Under the hood"],["doc","Keys and records"],["flaw","Flaws to show"]];
+const SHOTS=[
+  {id:"fd",g:"out",lv:1,spot:"fd",cover:1,pr:1,fr:"34",fl:1,wide:1,n:"Front three-quarter, driver side",tip:"Step back two to three car lengths, crouch to headlight height and turn the front wheels so the rim faces you."},
+  {id:"conv",g:"out",lv:1,spot:"fd",only:["coupe"],pr:3,fr:"34",fl:1,wide:1,n:"Top down",tip:"Convertibles sell on this shot. Skip it for a hardtop coupe."},
+  {id:"d",g:"out",lv:1,spot:"d",pr:3,fr:"side",fl:1,wide:1,n:"Driver side profile",tip:"Square on to the car, the whole thing in frame with a little space at each end."},
+  {id:"rd",g:"out",lv:2,spot:"rd",pr:16,fr:"34r",fl:1,wide:1,n:"Rear three-quarter, driver side",tip:"Fills the gap between the side and the back in the walk-around."},
+  {id:"r",g:"out",lv:1,spot:"r",pr:4,fr:"rear",wide:1,n:"Straight on from the back",tip:"Centred on the badge with the trunk closed. Blur the plate afterwards if you like."},
+  {id:"hitch",g:"out",lv:1,spot:"r",f:"tow",pr:15,fr:"rear",n:"Tow hitch and wiring",tip:"The receiver, the trailer plug, and the brake controller under the dash if it has one."},
+  {id:"rp",g:"out",lv:1,spot:"rp",pr:2,fr:"34r",wide:1,n:"Rear three-quarter, passenger side",tip:"The opposite corner from your cover shot, so buyers see all four sides between the two."},
+  {id:"p",g:"out",lv:2,spot:"p",pr:14,fr:"side",wide:1,n:"Passenger side profile",tip:"Match the driver-side shot so the two read as a pair."},
+  {id:"vdoor",g:"out",lv:1,spot:"p",only:["van"],pr:12,fr:"side",wide:1,n:"Sliding doors open",tip:"From the passenger side with the sliding door and liftgate open, to show how easy it is to load."},
+  {id:"fp",g:"out",lv:2,spot:"fp",pr:13,fr:"34",wide:1,n:"Front three-quarter, passenger side",tip:"A second cover option. Use whichever side has the better light."},
+  {id:"f",g:"out",lv:2,spot:"f",pr:17,fr:"front",wide:1,n:"Straight on from the front",tip:"Centred at grille height. Shows the headlights and any stone chips on the bumper."},
+  {id:"heater",g:"out",lv:1,spot:"f",f:"heater",pr:19,fr:"front",n:"Block heater cord",tip:"Pull the plug end out from the grille so it is in view. Winter buyers look for it."},
+  {id:"wshield",g:"out",lv:2,up:"damage",pr:24,fr:"detail",n:"Windshield",tip:"From inside, facing the light, so any chips or cracks show, or that there are none."},
+  {id:"mods",g:"out",lv:1,f:"mods",pr:14,fr:"detail",n:"Each modification",tip:"Lift kit, exhaust, lights, stereo: one shot each with the brand name readable."},
+  {id:"wheel",g:"whl",lv:1,spot:"wheel",pr:11,fr:"wheel",n:"Wheel and tire close-up",tip:"Fill the frame with one wheel. Shows rim condition and the tire brand."},
+  {id:"awheel",g:"whl",lv:1,spot:"wheel",f:"wheels",pr:13,fr:"wheel",n:"Aftermarket wheel details",tip:"A close-up of the brand or size stamped on the rim, plus a low side shot showing the stance."},
+  {id:"tread",g:"whl",lv:2,spot:"wheel",pr:20,fr:"wheel",n:"Tread depth",tip:"Stand a coin in the main groove and shoot close. It shows how much tire is left."},
+  {id:"tires2",g:"whl",lv:1,f:"tires2",pr:14,fr:"wheel",n:"Second set of tires",tip:"Lay them out together, then one close-up of the tread and one of the size on the sidewall, like 225/65R17."},
+  {id:"spare",g:"whl",lv:2,spot:"tr",pr:25,fr:"cargo",n:"Spare tire and jack",tip:{def:"Lift the cargo floor to show the spare and jack, or the inflator kit if that is what it has.",truck:"Usually slung under the back of the bed. One shot showing it is there."}},
+  {id:"dash",g:"in",lv:1,spot:"cf",pr:5,fr:"dash",wide:1,n:"Dashboard from the driver's door",tip:"Door open, shoot at seat height so the wheel, gauges and centre screen are all in frame."},
+  {id:"odo",g:"in",lv:1,spot:"cf",pr:6,fr:"dash",n:"Odometer, engine running",tip:"With the engine on the reading is lit, and buyers can see there are no warning lights."},
+  {id:"evbat",g:"in",lv:1,spot:"cf",only:["ev"],pr:12,fr:"screen",n:"Range or battery screen",tip:"The range at full charge, or the battery health page if the car has one. EV buyers ask for this first."},
+  {id:"screen",g:"in",lv:2,up:"screen|audio",spot:"cf",pr:18,fr:"screen",n:"Centre screen and controls",tip:"Turn the screen on: navigation, the backup camera, or the audio brand logo."},
+  {id:"fseats",g:"in",lv:1,spot:"cf",pr:7,fr:"seat",wide:1,n:"Front seats",tip:"From an open back door looking forward, or across from the passenger door."},
+  {id:"comfort",g:"in",lv:1,spot:"cf",f:"leather|heated",pr:17,fr:"seat",n:"Seat material and heat controls",tip:"The seat surface up close, and the buttons for heating or cooling."},
+  {id:"bolster",g:"in",lv:2,up:"leather",spot:"cf",pr:24,fr:"seat",n:"Driver's seat close-up",tip:"The outer edge of the driver's seat wears first. Show it clean, or show it honestly."},
+  {id:"sunroof",g:"in",lv:1,spot:"cf",f:"sunroof",pr:15,fr:"seat",n:"Sunroof open",tip:"From the back seat looking up with the shade and glass slid back."},
+  {id:"floor",g:"in",lv:2,spot:"cf",pr:28,fr:"seat",n:"Floor mats and carpet",tip:"Lay in the mats that come with it. All-weather mats are worth showing."},
+  {id:"rseats",g:"in",lv:1,spot:"cr",pr:8,fr:"seat",wide:1,n:"Back seats",tip:"From an open back door. Skip it if the car is a two-seater."},
+  {id:"third",g:"in",lv:1,spot:"cr",f:"3row|t:van",pr:13,fr:"seat",wide:1,n:"Third row, up and folded",tip:"One shot with the third row up, one folded flat for cargo."},
+  {id:"cargo",g:"in",lv:1,spot:"tr",not:["truck"],pr:9,fr:"cargo",wide:1,n:{def:"Trunk, open and empty",suv:"Cargo area, open and empty",van:"Cargo area behind the third row"},tip:"Take everything out. Buyers picture their own stuff in it."},
+  {id:"folded",g:"in",lv:2,spot:"tr",only:["suv"],pr:22,fr:"cargo",wide:1,n:"Rear seats folded flat",tip:"Shows the full cargo floor. Add the length in your ad if you measure it."},
+  {id:"bed",g:"in",lv:1,spot:"tr",only:["truck"],pr:9,fr:"cargo",wide:1,n:"Truck bed, tailgate down",tip:"Shows the liner, tie-downs and any scratches. Put the bed length in your ad."},
+  {id:"bedc",g:"in",lv:2,spot:"tr",only:["truck"],pr:23,fr:"cargo",n:"Bed cover or liner close-up",tip:"Tonneau cover closed and open, or a close look at the spray-in liner."},
+  {id:"engine",g:"eng",lv:1,spot:"eng",pr:10,fr:"engine",wide:1,n:{def:"Engine bay",ev:"Under the hood"},tip:{def:"Hood fully up, shot from the front. Wipe the dust off the plastic covers first.",ev:"Show the front trunk or the motor cover, whichever this car has."}},
+  {id:"evport",g:"eng",lv:1,only:["ev"],pr:18,fr:"detail",n:"Charge port and cable",tip:"Port door open, plus the cable and adapters that come with it. Skip for a non-plug-in hybrid."},
+  {id:"under",g:"eng",lv:2,up:"damage",pr:23,fr:"detail",n:"Underbody and rocker panels",tip:"Crouch at each wheel arch and along the bottom of the doors. On salted roads this is where buyers look for rust."},
+  {id:"keys",g:"doc",lv:1,pr:15,fr:"doc",n:"All keys and fobs",tip:"Lay every key out together. Buyers want to know if there is a spare."},
+  {id:"remote",g:"doc",lv:1,f:"remote",pr:22,fr:"doc",n:"Remote start fob or app",tip:"The fob with its extra button, or the app open on your phone."},
+  {id:"records",g:"doc",lv:1,f:"records",pr:16,fr:"doc",n:"Service records",tip:"Fan out the receipts or open the stamped maintenance booklet."},
+  {id:"jamb",g:"doc",lv:2,spot:"d",pr:26,fr:"doc",n:"Door jamb sticker",tip:"Shows the build date and original tire sizes. Many buyers also ask for the VIN."},
+  {id:"history",g:"doc",lv:2,up:"records",pr:27,fr:"doc",n:"Vehicle history report",tip:"A screenshot of the summary page from a history report such as Carfax."},
+  {id:"manual",g:"doc",lv:2,pr:30,fr:"doc",n:"Owner's manual",tip:"A small thing that tells buyers the car was looked after."},
+  {id:"dents",g:"flaw",lv:1,f:"damage",pr:12,fr:"detail",n:"Each dent, scratch or rust spot",tip:"Two shots per flaw: one wide to show where it is, one close with a finger for scale. Or mark each one on the map."},
+  {id:"lights",g:"flaw",lv:1,spot:"cf",f:"damage",pr:13,fr:"dash",n:"Warning lights on the dash",tip:"If any stay on with the engine running, show them. Hiding them costs trust at the test drive."}
+];
+const KINDS={dent:"Dent",scratch:"Scratch",rust:"Rust",chip:"Chip or crack",other:"Wear"};
+const FEAT_AD={sunroof:"a sunroof","3row":"third-row seating",wheels:"aftermarket wheels",tires2:"a second set of tires",tow:"a tow hitch",heater:"a block heater",remote:"remote start",screen:"a touchscreen",audio:"a premium sound system",leather:"leather seats",heated:"heated seats",records:"service records",mods:"some modifications (see photos)"};
+const SITES={
+  fb:{cap:20,note:"Facebook suggests 15 to 20 photos, each at least 960×720. The first one is the thumbnail buyers see in the feed, so this keeps your 20 most important."},
+  kj:{cap:10,note:"Kijiji takes up to 10 free photos, so this picks your 10 most important."},
+  at:{cap:15,note:"A free AutoTrader.ca listing takes about 15 photos (paid packages allow more), so this picks your 15 most important."},
+  cl:{cap:24,note:"Craigslist takes up to 24 photos."},
+  all:{cap:0,note:"Every photo you have taken, in posting order."}
+};
+const ANG={f:0,fd:-40,d:-90,rd:-140,r:180,rp:140,p:90,fp:40};
+const EXT=new Set(["side","34","34r","front","rear"]);
+const SK={
+  side:'<path class="b" d="M7 36V30Q7 27 11 26L20 25L28 18Q30 16 34 16H46Q49 16 52 19L58 25L64 26Q67 27 67 30V36Z"/><path class="w" d="M30.5 19H39V25H24.5ZM41 19H46.5Q48.5 19 50.5 21L54 25H41Z"/><rect class="l" x="62" y="28" width="4" height="2.5" rx="1"/><circle class="t" cx="19" cy="36" r="5.5"/><circle class="t" cx="55" cy="36" r="5.5"/><circle class="h" cx="19" cy="36" r="2.2"/><circle class="h" cx="55" cy="36" r="2.2"/>',
+  "34":'<path class="b" d="M6 36V30Q6 27 10 26L17 25L24 19Q26 17 30 17H41Q44 17 46 19L51 25L54 26V36Z"/><path class="b2" d="M54 26L63 27.5Q66 28 66 31V36H54Z"/><path class="w" d="M26 20H34V25H20.5ZM36 20H41Q43 20 44.5 21.5L48 25H36Z"/><path class="w" d="M46.5 19.5L51.5 25L54 26L58.5 26.6L52 19.6Z"/><rect class="l" x="57.5" y="29" width="6.5" height="2.6" rx="1"/><circle class="t" cx="17" cy="35.5" r="5"/><circle class="t" cx="47" cy="35.5" r="5.5"/><circle class="h" cx="17" cy="35.5" r="2"/><circle class="h" cx="47" cy="35.5" r="2.2"/>',
+  "34r":'<path class="b2" d="M6 36V31Q6 28 9 27.5L18 26V36Z"/><path class="b" d="M18 26L21 25L26 19Q28 17 32 17H43Q46 17 48 19L55 25L62 26Q66 27 66 30V36H18Z"/><path class="w" d="M21.5 25.4L26.5 19.6L30.5 19.6L25.5 26Z"/><path class="w" d="M33 20H40V25H29ZM42 20H46Q48 20 49.5 21.5L52.5 25H42Z"/><rect class="tl" x="8" y="29" width="7" height="2.6" rx="1"/><circle class="t" cx="25" cy="35.5" r="5.5"/><circle class="t" cx="56" cy="35.5" r="5"/><circle class="h" cx="25" cy="35.5" r="2.2"/><circle class="h" cx="56" cy="35.5" r="2"/>',
+  front:'<path class="b" d="M14 36V28Q14 25 18 24L22 23L26 15Q27 13 30 13H42Q45 13 46 15L50 23L54 24Q58 25 58 28V36Z"/><path class="w" d="M28 16H44L47.5 23H24.5Z"/><rect class="l" x="17" y="27" width="8" height="3" rx="1"/><rect class="l" x="47" y="27" width="8" height="3" rx="1"/><rect class="b2" x="28" y="28" width="16" height="4" rx="1"/><rect class="t" x="15" y="36" width="6" height="4" rx="1"/><rect class="t" x="51" y="36" width="6" height="4" rx="1"/>',
+  rear:'<path class="b" d="M14 36V28Q14 25 18 24L22 23L26 15Q27 13 30 13H42Q45 13 46 15L50 23L54 24Q58 25 58 28V36Z"/><path class="w" d="M28.5 16H43.5L46 22H26Z"/><rect class="tl" x="16" y="26.5" width="9" height="3" rx="1"/><rect class="tl" x="47" y="26.5" width="9" height="3" rx="1"/><rect class="w" x="31" y="29" width="10" height="4.5" rx="1"/><rect class="t" x="15" y="36" width="6" height="4" rx="1"/><rect class="t" x="51" y="36" width="6" height="4" rx="1"/>',
+  dash:'<path class="b" d="M3 25Q36 10 69 25V32H3Z"/><rect class="w" x="40" y="22" width="15" height="8" rx="1.5"/><circle class="o" cx="24" cy="32" r="9"/><path class="o" d="M15.5 32H32.5M24 32V41"/>',
+  seat:'<path class="b" d="M13 12Q13 8 17 8H26Q30 8 30 12L29 30H14Z"/><path class="b2" d="M11 30H32Q33 30 33 32V38H10V32Q10 30 11 30Z"/><path class="b" d="M42 12Q42 8 46 8H55Q59 8 59 12L58 30H43Z"/><path class="b2" d="M40 30H61Q62 30 62 32V38H39V32Q39 30 40 30Z"/>',
+  cargo:'<path class="b" d="M10 41V16Q10 10 16 10H56Q62 10 62 16V41Z"/><path class="w" d="M16 34L20 15H52L56 34Z"/><rect class="b2" x="14" y="34" width="44" height="5" rx="1"/>',
+  engine:'<path class="b2" d="M8 22L36 6L64 22Z"/><rect class="b" x="12" y="22" width="48" height="19" rx="2"/><rect class="w" x="22" y="25" width="28" height="9" rx="2"/><circle class="o" cx="16.5" cy="28" r="2.3"/><path class="o" d="M26 38H46"/>',
+  wheel:'<circle class="t" cx="36" cy="24" r="18"/><circle class="b" cx="36" cy="24" r="11.5"/><path class="o" d="M36 13.5V34.5M25.5 24H46.5M28.6 16.6L43.4 31.4M43.4 16.6L28.6 31.4"/><circle class="h" cx="36" cy="24" r="3"/>',
+  detail:'<rect class="b" x="6" y="10" width="60" height="28" rx="4"/><circle class="w" cx="32" cy="23" r="11"/><path class="mk" d="M26 25L30 20L33 24L38 19"/><path class="o" d="M32 23m-11 0a11 11 0 1 0 22 0a11 11 0 1 0-22 0M40 31L48 39"/>',
+  doc:'<rect class="w" x="14" y="7" width="24" height="33" rx="2"/><path class="o" d="M19 15H33M19 21H33M19 27H29"/><circle class="o" cx="51" cy="25" r="6"/><path class="o" d="M51 31V41M51 37H55"/>',
+  screen:'<rect class="b" x="11" y="7" width="50" height="32" rx="3"/><rect class="w" x="14" y="10" width="44" height="26" rx="1.5"/><path class="o" d="M19 31L29 21L37 27L52 15"/>'
+};
+const CHECK='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const CAM='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.6-2.4h6.8L17 8h3v11H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="13.2" r="3.4" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+const KEY="car-shot-list-v2",OLD="car-shot-list-v1";
+const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const cap1=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
+const listJoin=a=>a.length<2?(a[0]||""):a.slice(0,-1).join(", ")+" and "+a[a.length-1];
+const num=s=>{const n=Number(String(s||"").replace(/[^\d.]/g,""));return isFinite(n)&&n>0?n:0};
+const slug=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60)||"photo";
+const pick=(v,t)=>typeof v==="string"?v:(v[t]||v.def);
+const gIdx=g=>GROUPS.findIndex(x=>x[0]===g);
+const use=n=>{try{return window.claude&&typeof window.claude.use==="function"?Promise.resolve(window.claude.use(n)).catch(()=>null):Promise.resolve(null)}catch(e){return Promise.resolve(null)}};
+
+/* ---------- state ---------- */
+function blankCar(){return{id:uid(),type:"sedan",level:"ess",feats:[],done:{},dmg:[],ad:{unit:"km"},site:"fb"}}
+function exampleCar(){return{id:"ex1",type:"suv",level:"ess",feats:["heater","remote","tires2","records","heated","damage"],done:{fd:1,d:1,wheel:1},dmg:[{id:"m1",u:-.31,v:.5,kind:"rust"}],ad:{year:"2016",make:"Honda",model:"CR-V",trim:"EX",km:"148500",unit:"km",price:"18900",colour:"Silver",trans:"Automatic",drive:"AWD",owners:"2",acc:"none",title:"paid",reason:"Moving up to a minivan",loc:"",vin:"",notes:""},site:"fb"}}
+function fix(c){
+  if(!TYPES[c.type])c.type="sedan";
+  if(c.level!=="full")c.level="ess";
+  c.feats=Array.isArray(c.feats)?c.feats:[];
+  const map={cold:["heater","remote"],tech:["screen"],comfort:["leather","heated"]};
+  c.feats=[...new Set(c.feats.flatMap(f=>map[f]||[f]))];
+  c.done=c.done&&typeof c.done==="object"?c.done:{};
+  c.dmg=Array.isArray(c.dmg)?c.dmg.filter(m=>m&&isFinite(m.u)&&isFinite(m.v)):[];
+  c.ad=c.ad&&typeof c.ad==="object"?c.ad:{unit:"km"};
+  if(!SITES[c.site])c.site="fb";
+  if(!c.id)c.id=uid();
+  return c;
+}
+function load(){
+  let a=null;
+  try{a=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+  if(a&&Array.isArray(a.cars)&&a.cars.length){a.cars=a.cars.map(fix);if(!a.cars.some(c=>c.id===a.cur))a.cur=a.cars[0].id;return a}
+  let v1=null;
+  try{v1=JSON.parse(localStorage.getItem(OLD))}catch(e){}
+  if(v1&&TYPES[v1.type]&&!v1.ex){const c=fix({type:v1.type,level:v1.level,feats:v1.feats,done:v1.done});return{cars:[c],cur:c.id,ex:0}}
+  const c=exampleCar();
+  return{cars:[c],cur:c.id,ex:1};
+}
+let app=load();
+const car=()=>app.cars.find(c=>c.id===app.cur)||app.cars[0];
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(app))}catch(e){}};
+const touch=()=>{app.ex=0;save()};
+let cur=[],lastSpot=null,markMode=false,G={cx:0,cy:0,L:1,B:1},DL=null,AI=null,AIimg=false,deferredInstall=null;
+
+/* ---------- photo store (IndexedDB, this device only) ---------- */
+const P={};
+const pk=id=>car().id+":"+id;
+const photo=id=>P[pk(id)];
+let dbp=null,persistOK=true;
+function idb(){
+  if(!dbp)dbp=new Promise((res,rej)=>{try{const r=indexedDB.open("car-shot-photos",1);r.onupgradeneeded=()=>r.result.createObjectStore("p",{keyPath:"key"});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}});
+  return dbp;
+}
+async function idbTx(fn){
+  try{const d=await idb();await new Promise((res,rej)=>{const t=d.transaction("p","readwrite");fn(t.objectStore("p"));t.oncomplete=res;t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)});return true}
+  catch(e){return false}
+}
+function storeRec(key){const r=P[key];if(!r)return;idbTx(s=>s.put({key,blob:r.blob,orig:r.orig||null,q:r.q||null,ai:r.ai||null,w:r.w,h:r.h})).then(ok=>{if(!ok&&persistOK){persistOK=false;renderFoot()}})}
+function setRec(key,rec){const old=P[key];if(old&&old.url)URL.revokeObjectURL(old.url);rec.url=URL.createObjectURL(rec.blob);P[key]=rec;storeRec(key)}
+function dropRec(key){const old=P[key];if(old&&old.url)URL.revokeObjectURL(old.url);delete P[key];idbTx(s=>s.delete(key))}
+async function loadPhotos(){
+  try{
+    const d=await idb();
+    const all=await new Promise((res,rej)=>{const r=d.transaction("p").objectStore("p").getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)});
+    all.forEach(r=>{if(r&&r.blob){P[r.key]={blob:r.blob,orig:r.orig||null,q:r.q||null,ai:r.ai||null,w:r.w,h:r.h,url:URL.createObjectURL(r.blob)}}});
+    render();
+  }catch(e){persistOK=false;renderFoot()}
+}
+
+/* ---------- shots for the current car ---------- */
+function locName(u,v,t){
+  const T=TYPES[t]||TYPES.sedan,side=v<-.3?"driver":v>.3?"passenger":null;
+  if(u>.44)return side?"front bumper, "+side+" corner":"front bumper";
+  if(u<-.44)return side?"rear bumper, "+side+" corner":(t==="truck"?"tailgate":"rear bumper");
+  if(!side){
+    if(u>T.ws0)return"hood";
+    if(u>T.ws1)return"windshield";
+    if(u>T.re)return"roof";
+    if(T.bed!=null&&u<T.bed)return"truck bed";
+    if(u>T.rg)return"rear window";
+    return t==="suv"||t==="van"?"liftgate":"trunk lid";
+  }
+  if(Math.abs(v)>.4&&Math.abs(u-.31)<.08)return"front "+side+" wheel arch";
+  if(Math.abs(v)>.4&&Math.abs(u+.31)<.08)return"rear "+side+" wheel arch";
+  if(u>T.ws0-.02)return side+" front fender";
+  if(T.bed!=null&&u<T.bed)return side+" side of the bed";
+  if(t==="coupe")return u>T.re?side+" door":side+" rear quarter panel";
+  if(u>.04)return side+" front door";
+  if(u>-.22)return side+(t==="van"?" sliding door":" rear door");
+  return side+" rear quarter panel";
+}
+function visible(c,level){
+  const T=c.type,F=new Set(c.feats),has=k=>k.split("|").some(x=>x==="t:"+T||F.has(x));
+  const arr=SHOTS.filter(s=>{
+    if(s.only&&!s.only.includes(T))return false;
+    if(s.not&&s.not.includes(T))return false;
+    if(s.f&&!has(s.f))return false;
+    if(s.id==="dents"&&c.dmg.length)return false;
+    const lv=s.up&&has(s.up)?1:s.lv;
+    return lv===1||level==="full";
+  });
+  c.dmg.forEach(m=>{
+    const loc=locName(m.u,m.v,T),k=KINDS[m.kind]||"Damage";
+    arr.push({id:"dw-"+m.id,g:"flaw",lv:1,mk:1,mark:m.id,spot:"m-"+m.id,pr:12,fr:"side",fl:m.v<0?1:0,n:k+", "+loc+": wide",tip:"Step back so buyers can see where on the car it is."});
+    arr.push({id:"dc-"+m.id,g:"flaw",lv:1,mk:1,spot:"m-"+m.id,pr:21,fr:"detail",n:k+", "+loc+": close-up",tip:"Fill the frame, with a finger or a coin beside it for scale."});
+  });
+  return arr.map((s,i)=>({s,i})).sort((a,b)=>gIdx(a.s.g)-gIdx(b.s.g)||(b.s.mk||0)-(a.s.mk||0)||a.i-b.i).map(x=>x.s);
+}
+
+/* ---------- rendering ---------- */
+function sketch(fr,fl){
+  return '<svg class="sk" viewBox="0 0 72 48" aria-hidden="true"><g'+(fl?' transform="matrix(-1 0 0 1 72 0)"':"")+">"+(EXT.has(fr)?'<path class="gl" d="M3 41.5H69"/>':"")+(SK[fr]||SK.detail)+"</g></svg>";
+}
+function issuesOf(r){
+  if(!r)return[];
+  const a=(r.q&&r.q.issues)?r.q.issues.slice():[];
+  if(r.ai&&r.ai.verdict!=="good")(r.ai.issues||[]).forEach(x=>a.push(x));
+  return a;
+}
+function carName(c,i){const a=c.ad||{};const n=[a.year,a.make,a.model].map(s=>(s||"").trim()).filter(Boolean).join(" ");return n||("Car "+(i+1)+" ("+TYPES[c.type].l+")")}
+function renderCars(){
+  const sel=$("carSel");sel.textContent="";
+  app.cars.forEach((c,i)=>{const o=document.createElement("option");o.value=c.id;o.textContent=carName(c,i);sel.appendChild(o)});
+  sel.value=car().id;
+}
+function render(){
+  const c=car();
+  cur=visible(c,c.level).map((s,i)=>({...s,n:i+1,name:pick(s.n,c.type),tipT:pick(s.tip,c.type)}));
+  document.querySelectorAll("[data-type]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.type===c.type));
+  document.querySelectorAll("[data-level]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.level===c.level));
+  document.querySelectorAll("[data-f]").forEach(b=>b.setAttribute("aria-pressed",c.feats.includes(b.dataset.f)));
+  document.querySelectorAll("[data-site]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.site===c.site));
+  $("cEss").textContent=visible(c,"ess").length+" shots";
+  $("cFull").textContent=visible(c,"full").length+" shots";
+  let h="";
+  GROUPS.forEach(([g,label])=>{
+    const rows=cur.filter(s=>s.g===g);
+    if(!rows.length)return;
+    const dn=rows.filter(s=>c.done[s.id]).length;
+    h+='<div class="grp"><h3>'+label+"<span>"+dn+" of "+rows.length+" done</span></h3><ol>";
+    rows.forEach(s=>{
+      const d=!!c.done[s.id],ph=photo(s.id),iss=issuesOf(ph);
+      const nm=esc(s.name);
+      const sl=ph
+        ?'<button class="slot has" type="button" data-view="'+s.id+'" aria-label="Open the photo for '+nm+'"><img src="'+ph.url+'" alt="">'+(iss.length?'<i class="wb">!</i>':"")+"</button>"
+        :'<button class="slot" type="button" data-pick="'+s.id+'" aria-label="Take the photo for '+nm+'">'+sketch(s.fr,s.fl)+'<i class="cb">'+CAM+"</i></button>";
+      const body='<span class="nm"><b>'+nm+"</b>"+(s.cover?"<em>Cover photo</em>":"")+'</span><span class="tip">'+esc(s.tipT)+"</span>"+(iss.length?'<span class="warn">Check: '+esc(iss.join(", "))+"</span>":"");
+      const txt=ph?'<button class="txt" type="button" data-view="'+s.id+'">'+body+"</button>":'<button class="txt" type="button" data-pick="'+s.id+'">'+body+"</button>";
+      h+='<li class="shot'+(d?" done":"")+'" id="s-'+s.id+'"><button class="tick" type="button" data-id="'+s.id+'" aria-pressed="'+d+'" aria-label="'+(d?"Untick ":"Tick off ")+nm+'"><span class="num">'+(d?CHECK:s.n)+"</span></button>"+txt+sl+(s.mark?'<button class="rm" type="button" data-rm="'+s.mark+'">Remove this mark</button>':"")+"</li>";
+    });
+    h+="</ol></div>";
+  });
+  $("list").innerHTML=h;
+  const dn=cur.filter(s=>c.done[s.id]).length;
+  $("pDone").textContent=dn;
+  $("pTot").textContent=cur.length;
+  $("pBar").style.width=(cur.length?dn/cur.length*100:0)+"%";
+  $("ex").hidden=!app.ex;
+  renderGallery();
+  draw();
+}
+function renderFoot(){
+  $("foot").textContent=persistOK
+    ?"Photos and car details stay on this phone and are never uploaded. Location data is stripped from each photo when you add it."
+    :"This browser won't let the app keep photos, so they will be gone when you close it. Save or share them before you leave.";
+}
+
+/* ---------- map ---------- */
+const svg=$("map");
+function draw(){
+  const W=svg.clientWidth,H=svg.clientHeight;
+  if(!W||!H)return;
+  const c=car(),P2=TYPES[c.type];
+  const base=Math.min(W*.6,H*1.2,340);
+  const L=base*P2.len,B=base*P2.wid,cx=W/2,cy=H/2;
+  G={cx,cy,L,B};
+  const X=u=>cx+u*L,Y=v=>cy+v*B,f=n=>n.toFixed(1);
+  const r=Math.max(11,Math.min(14,L*.06));
+  const rx=Math.min(W/2-r-10,L/2+r+30),ry=Math.min(H/2-r-10,B/2+r+28);
+  let o='<defs><linearGradient id="bd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7f8fa"/><stop offset="1" stop-color="#b5bcc5"/></linearGradient><linearGradient id="rf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cdd3da"/></linearGradient><linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#71879b"/><stop offset="1" stop-color="#25313c"/></linearGradient></defs>';
+  let sd=11;const rnd=()=>(sd=sd*16807%2147483647)/2147483647;
+  o+='<g class="spk">';
+  for(let i=0;i<170;i++)o+='<circle cx="'+f(rnd()*W)+'" cy="'+f(rnd()*H)+'" r="'+(.5+rnd()*1.1).toFixed(2)+'" opacity="'+(.04+rnd()*.08).toFixed(2)+'"/>';
+  o+="</g>";
+  const ly=ry+r+12;
+  if(ly<H/2-3)o+='<path class="paint" d="M0 '+f(cy-ly)+"H"+W+"M0 "+f(cy+ly)+"H"+W+'"/>';
+  const x0=X(-.5),x1=X(.5),y0=Y(-.5),y1=Y(.5),rf=B*.32,rb=B*.2;
+  const body="M"+f(x0+rb)+" "+f(y0)+"H"+f(x1-rf)+"Q"+f(x1)+" "+f(y0)+" "+f(x1)+" "+f(y0+rf)+"V"+f(y1-rf)+"Q"+f(x1)+" "+f(y1)+" "+f(x1-rf)+" "+f(y1)+"H"+f(x0+rb)+"Q"+f(x0)+" "+f(y1)+" "+f(x0)+" "+f(y1-rb)+"V"+f(y0+rb)+"Q"+f(x0)+" "+f(y0)+" "+f(x0+rb)+" "+f(y0)+"Z";
+  o+='<path class="shd" d="'+body+'" transform="translate('+f(B*.06)+" "+f(B*.1)+')"/>';
+  const ww=L*.15,wh=B*.09;
+  [.31,-.31].forEach(u=>{o+='<rect x="'+f(X(u)-ww/2)+'" y="'+f(y0-wh*.45)+'" width="'+f(ww)+'" height="'+f(wh)+'" rx="3" fill="#0e0f11"/><rect x="'+f(X(u)-ww/2)+'" y="'+f(y1-wh*.55)+'" width="'+f(ww)+'" height="'+f(wh)+'" rx="3" fill="#0e0f11"/>'});
+  [-1,1].forEach(sg=>{o+='<ellipse cx="'+f(X(P2.ws0-.01))+'" cy="'+f(Y(.55*sg))+'" rx="'+f(L*.026)+'" ry="'+f(B*.06)+'" fill="#d6dbe1" stroke="rgba(0,0,0,.3)"/>'});
+  o+='<path d="'+body+'" fill="url(#bd)"/>';
+  o+='<path d="M'+f(X(-.42))+" "+f(y0+1.5)+"H"+f(X(.4))+'" stroke="#fff" stroke-width="1.5" fill="none" opacity=".9"/>';
+  o+='<path class="crease" d="M'+f(X(P2.ws0+.02))+" "+f(Y(-.24))+"L"+f(X(.47))+" "+f(Y(-.2))+"M"+f(X(P2.ws0+.02))+" "+f(Y(.24))+"L"+f(X(.47))+" "+f(Y(.2))+'"/>';
+  if(P2.bed!=null){
+    o+='<rect x="'+f(X(-.47))+'" y="'+f(Y(-.4))+'" width="'+f(X(P2.bed)-X(-.47))+'" height="'+f(B*.8)+'" rx="3" fill="#3a3e44"/>';
+    [-.24,-.08,.08,.24].forEach(v=>{o+='<path d="M'+f(X(-.46))+" "+f(Y(v))+"H"+f(X(P2.bed-.01))+'" stroke="rgba(255,255,255,.1)" stroke-width="2"/>'});
+  }
+  [-1,1].forEach(sg=>{
+    o+='<rect x="'+f(X(P2.rg))+'" y="'+f(sg<0?Y(-.43):Y(.36))+'" width="'+f(X(P2.ws1)-X(P2.rg))+'" height="'+f(B*.07)+'" fill="url(#gl)" opacity=".85"/>';
+    o+='<rect x="'+f(X(.452))+'" y="'+f(sg<0?Y(-.36):Y(.16))+'" width="'+f(L*.028)+'" height="'+f(B*.2)+'" rx="3" fill="#fff4cc"/>';
+    o+='<rect x="'+f(X(-.49))+'" y="'+f(sg<0?Y(-.38):Y(.2))+'" width="'+f(L*.022)+'" height="'+f(B*.18)+'" rx="2" fill="#c4231b"/>';
+  });
+  o+='<polygon points="'+f(X(P2.ws0))+","+f(Y(-.43))+" "+f(X(P2.ws1))+","+f(Y(-.36))+" "+f(X(P2.ws1))+","+f(Y(.36))+" "+f(X(P2.ws0))+","+f(Y(.43))+'" fill="url(#gl)"/>';
+  o+='<polygon points="'+f(X(P2.ws0-.006))+","+f(Y(-.3))+" "+f(X(P2.ws0-.006))+","+f(Y(-.12))+" "+f(X(P2.ws1+.01))+","+f(Y(.04))+" "+f(X(P2.ws1+.01))+","+f(Y(-.14))+'" fill="#fff" opacity=".16"/>';
+  o+='<rect x="'+f(X(P2.re))+'" y="'+f(Y(-.36))+'" width="'+f(X(P2.ws1)-X(P2.re))+'" height="'+f(B*.72)+'" rx="'+f(B*.06)+'" fill="'+(P2.glass?"url(#gl)":"url(#rf)")+'"/>';
+  if(c.feats.includes("sunroof")&&!P2.glass)o+='<rect x="'+f(X(P2.ws1-.15))+'" y="'+f(Y(-.24))+'" width="'+f(L*.12)+'" height="'+f(B*.48)+'" rx="3" fill="url(#gl)"/>';
+  o+='<polygon points="'+f(X(P2.re))+","+f(Y(-.36))+" "+f(X(P2.rg))+","+f(Y(-.4))+" "+f(X(P2.rg))+","+f(Y(.4))+" "+f(X(P2.re))+","+f(Y(.36))+'" fill="url(#gl)"/>';
+  if(markMode)o+='<path class="outline" d="'+body+'"/>';
+  const spots={};
+  cur.forEach(s=>{if(s.spot)(spots[s.spot]=spots[s.spot]||[]).push(s)});
+  Object.entries(spots).forEach(([k,arr])=>{
+    let x,y,ext=false,dia=false;
+    if(ANG[k]!=null){const a=ANG[k]*Math.PI/180,cs=Math.cos(a),sn=Math.sin(a);x=cx+rx*Math.sign(cs)*Math.sqrt(Math.abs(cs));y=cy+ry*Math.sign(sn)*Math.sqrt(Math.abs(sn));ext=true}
+    else if(k==="wheel"){x=X(.31);y=y0}
+    else if(k.startsWith("m-")){const m=c.dmg.find(d=>"m-"+d.id===k);if(!m)return;x=X(m.u);y=Y(m.v);dia=true}
+    else{x=X(P2.sp[k]);y=cy}
+    const todo=arr.filter(s=>!c.done[s.id]),dn=!todo.length;
+    const lab=esc(arr.map(s=>s.n+". "+s.name).join(", ")+(dn?" (all done)":""));
+    let g='<g transform="translate('+f(x)+" "+f(y)+')"><g class="pin'+(dn?" done":"")+(k===lastSpot?" pop":"")+'" data-spot="'+k+'" tabindex="0" role="button" aria-label="'+lab+'">';
+    if(todo.length>1&&!dia)g+='<circle class="stk" cx="3.5" cy="-3.5" r="'+f(r)+'"/>';
+    if(ext){
+      const dx=cx-x,dy=cy-y,d=Math.hypot(dx,dy),ux=dx/d,uy=dy/d;
+      g+='<path class="aim" d="M'+f(ux*(r+8))+" "+f(uy*(r+8))+"L"+f(ux*(r-3)-uy*6)+" "+f(uy*(r-3)+ux*6)+"L"+f(ux*(r-3)+uy*6)+" "+f(uy*(r-3)-ux*6)+'Z"/>';
+    }
+    const q=r+2;
+    g+=dia?'<path class="dot" d="M0 '+f(-q)+"L"+f(q)+" 0L0 "+f(q)+"L"+f(-q)+' 0Z"/>':'<circle class="dot" r="'+f(r)+'"/>';
+    g+=dn?'<path class="ck" d="M'+f(-r*.42)+" 0l"+f(r*.3)+" "+f(r*.32)+" "+f(r*.52)+" "+f(-r*.62)+'"/>':'<text dy=".35em">'+todo[0].n+"</text>";
+    o+=g+"</g></g>";
+  });
+  svg.innerHTML=o;
+  svg.classList.toggle("marking",markMode);
+  $("fig").classList.toggle("marking",markMode);
+  lastSpot=null;
+}
+const ro=new ResizeObserver(()=>draw());
+ro.observe(svg);
+
+function jump(k){
+  const c=car(),arr=cur.filter(s=>s.spot===k);
+  if(!arr.length)return;
+  const t=arr.find(s=>!c.done[s.id])||arr[0];
+  flashRow(t.id);
+}
+function flashRow(id){
+  const el=$("s-"+id);if(!el)return;
+  el.scrollIntoView({behavior:reduce?"auto":"smooth",block:"center"});
+  el.classList.remove("flash");void el.offsetWidth;el.classList.add("flash");
+}
+function setMark(on){
+  markMode=on;
+  $("markBtn").setAttribute("aria-pressed",on);
+  $("markBtn").textContent=on?"Done marking":"Mark damage";
+  $("cap").textContent=on?"Tap the car where the dent, scratch or rust is. Tap a diamond to change or remove it.":"Seen from above, front to the right, driver side on top. Red pins are shots still to take; tap one to jump to it.";
+  draw();
+}
+$("markBtn").addEventListener("click",()=>setMark(!markMode));
+svg.addEventListener("click",e=>{
+  const p=e.target.closest(".pin");
+  if(markMode){
+    if(p&&p.dataset.spot.startsWith("m-")){openSheet({id:p.dataset.spot.slice(2)});return}
+    const rc=svg.getBoundingClientRect(),u=(e.clientX-rc.left-G.cx)/G.L,v=(e.clientY-rc.top-G.cy)/G.B;
+    if(Math.abs(u)<=.56&&Math.abs(v)<=.62)openSheet({u:Math.max(-.5,Math.min(.5,u)),v:Math.max(-.5,Math.min(.5,v))});
+    else toast("Tap on the car itself.");
+    return;
+  }
+  if(p)jump(p.dataset.spot);
+});
+svg.addEventListener("keydown",e=>{const p=e.target.closest(".pin");if(p&&(e.key==="Enter"||e.key===" ")){e.preventDefault();if(markMode&&p.dataset.spot.startsWith("m-"))openSheet({id:p.dataset.spot.slice(2)});else jump(p.dataset.spot)}});
+
+/* ---------- damage sheet ---------- */
+let pending=null;
+function openSheet(pd){
+  const c=car();pending=pd;
+  const m=pd.id?c.dmg.find(d=>d.id===pd.id):null;
+  const u=m?m.u:pd.u,v=m?m.v:pd.v;
+  $("sTitle").textContent=cap1(locName(u,v,c.type));
+  $("sSub").textContent=m?"Change what it is, or remove the mark.":"What is it? This adds a wide shot and a close-up.";
+  document.querySelectorAll("[data-kind]").forEach(b=>b.setAttribute("aria-pressed",!!m&&b.dataset.kind===m.kind));
+  $("sDel").hidden=!m;
+  openModal("sheet");
+}
+$("kinds").addEventListener("click",e=>{
+  const b=e.target.closest("[data-kind]");if(!b||!pending)return;
+  const c=car();let label;
+  if(pending.id){const m=c.dmg.find(d=>d.id===pending.id);if(m)m.kind=b.dataset.kind;label=locName(m.u,m.v,c.type)}
+  else{const m={id:uid(),u:pending.u,v:pending.v,kind:b.dataset.kind};c.dmg.push(m);if(!c.feats.includes("damage"))c.feats.push("damage");label=locName(m.u,m.v,c.type);lastSpot="m-"+m.id}
+  touch();closeModal("sheet");setMark(false);render();updateAd();
+  toast((KINDS[b.dataset.kind]||"Mark")+" on the "+label+": 2 shots added.");
+});
+function removeMark(id){
+  const c=car();
+  c.dmg=c.dmg.filter(d=>d.id!==id);
+  ["dw-","dc-"].forEach(pf=>{delete c.done[pf+id];if(photo(pf+id))dropRec(pk(pf+id))});
+  touch();render();updateAd();
+}
+$("sDel").addEventListener("click",()=>{if(pending&&pending.id)removeMark(pending.id);closeModal("sheet")});
+$("sCancel").addEventListener("click",()=>closeModal("sheet"));
+
+/* ---------- modals and toast ---------- */
+let lastFocus=null;
+function openModal(id){lastFocus=document.activeElement;$(id).hidden=false;const f=$(id).querySelector("button");if(f)f.focus({preventScroll:true})}
+function closeModal(id){$(id).hidden=true;if(id==="viewer")V.id=null;if(lastFocus&&lastFocus.isConnected)lastFocus.focus({preventScroll:true})}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("pickSheet").hidden)closeModal("pickSheet");else if(!$("viewer").hidden)closeModal("viewer");else if(!$("sheet").hidden)closeModal("sheet")}});
+["sheet","viewer","pickSheet"].forEach(id=>$(id).addEventListener("click",e=>{if(e.target===$(id))closeModal(id)}));
+let tT=0;
+function toast(msg){const t=$("toast");t.textContent=msg;t.hidden=false;clearTimeout(tT);tT=setTimeout(()=>{t.hidden=true},2600)}
+
+/* ---------- photo intake and checks ---------- */
+function loadImg(blob){return new Promise((res,rej)=>{const u=URL.createObjectURL(blob),im=new Image();im.onload=()=>{res(im);setTimeout(()=>URL.revokeObjectURL(u),0)};im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("bad image"))};im.src=u})}
+const toBlob=(cv,q)=>new Promise(res=>cv.toBlob(b=>res(b),"image/jpeg",q||.9));
+function analyze(cv,shot,ow,oh){
+  const w=cv.width,h=cv.height,sc=Math.min(1,640/Math.max(w,h)),sw=Math.max(1,Math.round(w*sc)),sh=Math.max(1,Math.round(h*sc));
+  const t=document.createElement("canvas");t.width=sw;t.height=sh;
+  const x=t.getContext("2d",{willReadFrequently:true});x.drawImage(cv,0,0,sw,sh);
+  const d=x.getImageData(0,0,sw,sh).data,n=sw*sh,gr=new Float32Array(n);
+  let sum=0,hi=0,lo=0;
+  for(let i=0,j=0;i<n;i++,j+=4){const l=.2126*d[j]+.7152*d[j+1]+.0722*d[j+2];gr[i]=l;sum+=l;if(l>=250)hi++;if(l<=12)lo++}
+  let m1=0,m2=0,cnt=0;
+  for(let yy=1;yy<sh-1;yy++)for(let xx=1;xx<sw-1;xx++){const i=yy*sw+xx,v=4*gr[i]-gr[i-1]-gr[i+1]-gr[i-sw]-gr[i+sw];m1+=v;m2+=v*v;cnt++}
+  const mean=sum/n,lap=cnt?m2/cnt-(m1/cnt)**2:0,issues=[];
+  const dark=mean<62||lo/n>.45;
+  if(dark)issues.push("too dark");
+  else if(mean>208||hi/n>.22)issues.push("too bright or glare");
+  if(!dark&&lap<30)issues.push("looks blurry");
+  if(shot&&shot.wide&&oh>ow*1.05)issues.push("taken upright, turn the phone sideways");
+  if(Math.max(ow,oh)<960)issues.push("low resolution");
+  return{issues,mean:Math.round(mean),lap:Math.round(lap)};
+}
+async function intake(id,file){
+  const c=car(),key=c.id+":"+id,shot=cur.find(s=>s.id===id);
+  let im;
+  try{im=await loadImg(file)}catch(e){toast("Couldn't read that photo. Try another.");return}
+  const ow=im.naturalWidth,oh=im.naturalHeight,sc=Math.min(1,2400/Math.max(ow,oh));
+  const cv=document.createElement("canvas");cv.width=Math.round(ow*sc);cv.height=Math.round(oh*sc);
+  cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);
+  const blob=await toBlob(cv,.9);
+  if(!blob){toast("Couldn't save that photo.");return}
+  const q=analyze(cv,shot,ow,oh);
+  setRec(key,{blob,orig:null,q,ai:null,w:ow,h:oh});
+  if(c.id!==car().id)return;
+  c.done[id]=1;touch();
+  if(shot&&shot.spot)lastSpot=shot.spot;
+  render();
+  toast(q.issues.length?"Saved. Worth a look: "+q.issues.join(", ")+".":"Saved. Looks good.");
+}
+
+/* ---------- did the photo picker open? ---------- */
+let pickT=0;
+function watchPicker(inp){
+  if(!inp)return;
+  clearTimeout(pickT);
+  let opened=false;
+  const mark=()=>{opened=true};
+  window.addEventListener("blur",mark,{once:true});
+  document.addEventListener("visibilitychange",mark,{once:true});
+  ["change","cancel"].forEach(ev=>inp.addEventListener(ev,mark,{once:true}));
+  pickT=setTimeout(()=>{
+    window.removeEventListener("blur",mark);document.removeEventListener("visibilitychange",mark);
+    if(!opened&&document.hasFocus()){$("pickHelp").hidden=false;$("pickHelp").scrollIntoView({behavior:reduce?"auto":"smooth",block:"center"})}
+  },1800);
+}
+const hideHelp=()=>{$("pickHelp").hidden=true};
+$("hideHelp").addEventListener("click",hideHelp);
+document.addEventListener("change",e=>{if(e.target&&e.target.type==="file"&&e.target.files&&e.target.files.length){clearTimeout(pickT);hideHelp()}},true);
+
+/* ---------- take or choose a photo ---------- */
+let pendId=null;
+function openPick(id){
+  const s=cur.find(x=>x.id===id);if(!s)return;
+  pendId=id;
+  $("pkTitle").textContent=s.n+". "+s.name;
+  $("pkFig").innerHTML=sketch(s.fr,s.fl);
+  $("pkTip").textContent=s.tipT;
+  openModal("pickSheet");
+}
+function startPick(id,how){
+  if(!id)return;
+  pendId=id;
+  const inp=how==="cam"?$("camIn"):$("galIn");
+  inp.value="";
+  watchPicker(inp);
+  inp.click();
+}
+$("pkCam").addEventListener("click",()=>{startPick(pendId,"cam");closeModal("pickSheet")});
+$("pkGal").addEventListener("click",()=>{startPick(pendId,"gal");closeModal("pickSheet")});
+$("pkCancel").addEventListener("click",()=>closeModal("pickSheet"));
+["camIn","galIn"].forEach(k=>$(k).addEventListener("change",async e=>{
+  const f=e.target.files&&e.target.files[0],id=pendId;
+  if(!f||!id)return;
+  await intake(id,f);
+  e.target.value="";
+  if(!$("viewer").hidden&&V.id===id&&photo(id)){V.img=await loadImg(photo(id).blob);setVMode("view");paintV();renderVQ()}
+}));
+
+/* ---------- list events ---------- */
+function setDone(id,val){
+  const c=car();
+  if(val)c.done[id]=1;else delete c.done[id];
+  touch();
+  const s=cur.find(x=>x.id===id);
+  lastSpot=val&&s&&s.spot?s.spot:null;
+  render();
+}
+const list=$("list");
+list.addEventListener("click",e=>{
+  const pb=e.target.closest("[data-pick]");if(pb){openPick(pb.dataset.pick);return}
+  const rm=e.target.closest("[data-rm]");if(rm){removeMark(rm.dataset.rm);return}
+  const v=e.target.closest("[data-view]");if(v){openViewer(v.dataset.view);return}
+  const b=e.target.closest(".tick");if(!b)return;
+  const id=b.dataset.id;setDone(id,!car().done[id]);
+  const nb=document.querySelector('.tick[data-id="'+id+'"]');if(nb)nb.focus({preventScroll:true});
+});
+list.addEventListener("change",e=>{const inp=e.target.closest("input[type=file]");if(inp&&inp.files&&inp.files[0])intake(inp.dataset.id,inp.files[0])});
+
+/* ---------- setup events ---------- */
+$("types").addEventListener("click",e=>{const b=e.target.closest("[data-type]");if(!b)return;car().type=b.dataset.type;touch();render();updateAd()});
+$("levels").addEventListener("click",e=>{const b=e.target.closest("[data-level]");if(!b)return;car().level=b.dataset.level;touch();render()});
+$("feats").addEventListener("click",e=>{const b=e.target.closest("[data-f]");if(!b)return;const c=car(),i=c.feats.indexOf(b.dataset.f);if(i<0)c.feats.push(b.dataset.f);else c.feats.splice(i,1);touch();render();updateAd()});
+$("carSel").addEventListener("change",e=>{app.cur=e.target.value;save();setMark(false);render();fillAd()});
+$("addCar").addEventListener("click",()=>{const c=blankCar();app.cars.push(c);app.cur=c.id;touch();renderCars();setMark(false);render();fillAd();toast("New car added. Pick its type below.")});
+const armBtn=(btn,label,fn)=>{let armed=false,t=0;btn.addEventListener("click",()=>{if(!armed){armed=true;btn.textContent="Tap again";btn.classList.add("arm");t=setTimeout(()=>{armed=false;btn.textContent=label;btn.classList.remove("arm")},3000);return}clearTimeout(t);armed=false;btn.textContent=label;btn.classList.remove("arm");fn()})};
+armBtn($("delCar"),"Delete",()=>{
+  const c=car();
+  Object.keys(P).forEach(k=>{if(k.startsWith(c.id+":"))dropRec(k)});
+  app.cars=app.cars.filter(x=>x.id!==c.id);
+  if(!app.cars.length)app.cars.push(blankCar());
+  app.cur=app.cars[0].id;touch();renderCars();setMark(false);render();fillAd();toast("Car deleted.");
+});
+armBtn($("clear"),"Clear checks",()=>{car().done={};touch();render()});
+$("copy").addEventListener("click",()=>{
+  const c=car();let t="Photo shot list: "+carName(c,app.cars.indexOf(c))+"\n";
+  GROUPS.forEach(([g,label])=>{const rows=cur.filter(s=>s.g===g);if(!rows.length)return;t+="\n"+label+"\n";rows.forEach(s=>{t+=(c.done[s.id]?"[x] ":"[ ] ")+s.n+". "+s.name+"\n"})});
+  copyText(t,$("copy"),"Copy list");
+});
+async function copyText(txt,btn,label){
+  let ok=false;
+  try{await navigator.clipboard.writeText(txt);ok=true}catch(e){
+    try{const ta=document.createElement("textarea");ta.value=txt;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();ok=document.execCommand("copy");ta.remove()}catch(e2){}
+  }
+  btn.textContent=ok?"Copied":"Copy blocked";setTimeout(()=>{btn.textContent=label},1800);
+}
+
+/* ---------- listing photos ---------- */
+function postingSet(){
+  const c=car(),site=SITES[c.site],taken=cur.filter(s=>photo(s.id));
+  let keep=taken,extra=[];
+  if(site.cap&&taken.length>site.cap){
+    const top=new Set(taken.slice().sort((a,b)=>a.pr-b.pr||a.n-b.n).slice(0,site.cap).map(s=>s.id));
+    keep=taken.filter(s=>top.has(s.id));extra=taken.filter(s=>!top.has(s.id));
+  }
+  return{keep,extra,site};
+}
+function gcard(s,i,out){
+  const ph=photo(s.id),iss=issuesOf(ph).length;
+  return'<button class="gcard'+(out?" out":"")+'" type="button" data-view="'+s.id+'"><img src="'+ph.url+'" alt="'+esc(s.name)+'"><span class="gn">'+(out?"–":i+1)+"</span>"+(iss?'<i class="wb">!</i>':"")+'<span class="gt">'+esc(s.name)+"</span></button>";
+}
+function renderGallery(){
+  const c=car(),{keep,extra,site}=postingSet();
+  $("siteNote").textContent=site.note;
+  let h="";
+  if(!keep.length)h='<div class="empty">No photos yet. Tap a sketch in the shot list to take the first one.</div>';
+  else{
+    h='<div class="gal">'+keep.map((s,i)=>gcard(s,i,false)).join("")+"</div>";
+    if(extra.length)h+='<p class="gsub">Left out to fit the limit ('+extra.length+")</p>"+'<div class="gal">'+extra.map(s=>gcard(s,0,true)).join("")+"</div>";
+  }
+  $("gal").innerHTML=h;
+  const need=cur.slice().sort((a,b)=>a.pr-b.pr).slice(0,site.cap||15).filter(s=>!photo(s.id)).slice(0,6).map(s=>s.name);
+  $("miss").textContent=need.length?"Still worth taking: "+need.join("; ")+".":(keep.length?"You have every key shot for this site.":"");
+  $("zipRow").hidden=!(DL&&keep.length);
+}
+$("gal").addEventListener("click",e=>{const b=e.target.closest("[data-view]");if(b)openViewer(b.dataset.view)});
+$("sites").addEventListener("click",e=>{const b=e.target.closest("[data-site]");if(!b)return;car().site=b.dataset.site;touch();render()});
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(b){let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0}
+async function makeZip(files){
+  const enc=new TextEncoder(),parts=[],cen=[];let off=0;
+  const d=new Date(),time=(d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1),date=((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate();
+  for(const f of files){
+    const data=new Uint8Array(await f.blob.arrayBuffer()),name=enc.encode(f.name),crc=crc32(data);
+    const h=new DataView(new ArrayBuffer(30));
+    h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);h.setUint16(10,time,true);h.setUint16(12,date,true);h.setUint32(14,crc,true);h.setUint32(18,data.length,true);h.setUint32(22,data.length,true);h.setUint16(26,name.length,true);h.setUint16(28,0,true);
+    parts.push(h.buffer,name,data);
+    const c=new DataView(new ArrayBuffer(46));
+    c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(10,0,true);c.setUint16(12,time,true);c.setUint16(14,date,true);c.setUint32(16,crc,true);c.setUint32(20,data.length,true);c.setUint32(24,data.length,true);c.setUint16(28,name.length,true);c.setUint16(30,0,true);c.setUint16(32,0,true);c.setUint16(34,0,true);c.setUint16(36,0,true);c.setUint32(38,0,true);c.setUint32(42,off,true);
+    cen.push(c.buffer,name);
+    off+=30+name.length+data.length;
+  }
+  const cs=cen.reduce((s,x)=>s+x.byteLength,0),e=new DataView(new ArrayBuffer(22));
+  e.setUint32(0,0x06054b50,true);e.setUint16(4,0,true);e.setUint16(6,0,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cs,true);e.setUint32(16,off,true);e.setUint16(20,0,true);
+  return new Blob([...parts,...cen,e.buffer],{type:"application/zip"});
+}
+function dlError(e){const c=e&&e.code;return c==="declined"?"Save cancelled.":c==="rate_limited"?"Another save is waiting. Try again in a moment.":c==="too_large"?"That file is too large to save here.":"Saving isn't available here."}
+$("zipBtn").addEventListener("click",async()=>{
+  if(!DL)return;
+  const c=car(),{keep,extra}=postingSet(),btn=$("zipBtn");
+  const files=keep.map((s,i)=>({name:String(i+1).padStart(2,"0")+"-"+slug(s.name)+".jpg",blob:photo(s.id).blob}))
+    .concat(extra.map(s=>({name:"extra-"+slug(s.name)+".jpg",blob:photo(s.id).blob})));
+  btn.disabled=true;$("zipMsg").textContent="Packing "+files.length+" photos…";
+  try{const zip=await makeZip(files);await DL.save({filename:slug(carName(c,app.cars.indexOf(c)))+"-photos.zip",data:zip});$("zipMsg").textContent="Saved "+files.length+" photos, numbered in posting order."}
+  catch(e){$("zipMsg").textContent=dlError(e);if(e&&(e.code==="unavailable"||e.code==="not_granted"))$("zipRow").hidden=true}
+  btn.disabled=false;
+});
+
+/* ---------- photo viewer and plate blur ---------- */
+const V={id:null,img:null,boxes:[],drag:null,mode:"view"};
+const vc=$("vCan");
+async function openViewer(id){
+  const r=photo(id);if(!r)return;
+  const s=cur.find(x=>x.id===id);
+  V.id=id;V.boxes=[];V.drag=null;
+  try{V.img=await loadImg(r.blob)}catch(e){toast("Couldn't open that photo.");return}
+  $("vTitle").textContent=s?s.n+". "+s.name:"Photo";
+  setVMode("view");paintV();renderVQ();
+  openModal("viewer");
+}
+function paintV(){
+  if(!V.img)return;
+  const w=V.img.naturalWidth,h=V.img.naturalHeight;
+  if(vc.width!==w||vc.height!==h){vc.width=w;vc.height=h}
+  const x=vc.getContext("2d");x.drawImage(V.img,0,0);
+  const lw=Math.max(3,w/320);x.lineWidth=lw;x.strokeStyle="#ef3b2a";x.fillStyle="rgba(239,59,42,.3)";
+  V.boxes.concat(V.drag?[V.drag]:[]).forEach(b=>{const bx=Math.min(b.x0,b.x1),by=Math.min(b.y0,b.y1),bw=Math.abs(b.x1-b.x0),bh=Math.abs(b.y1-b.y0);x.fillRect(bx,by,bw,bh);x.strokeRect(bx,by,bw,bh)});
+}
+function setVMode(m){
+  V.mode=m;
+  $("vAct").hidden=m!=="view";$("vBlurAct").hidden=m!=="blur";
+  vc.classList.toggle("drawing",m==="blur");
+  $("vHint").textContent=m==="blur"?"Drag a box over each licence plate, then tap Blur the boxes.":"";
+  const r=photo(V.id);
+  $("vRestore").hidden=!(r&&r.orig);
+  $("vSave").hidden=!DL;
+}
+function renderVQ(){
+  const r=photo(V.id),q=$("vQ");q.textContent="";if(!r)return;
+  const add=(t,cls)=>{const p=document.createElement("p");p.textContent=t;if(cls)p.className=cls;q.appendChild(p)};
+  const iss=r.q&&r.q.issues||[];
+  add(iss.length?"Quick check: "+iss.join(", ")+".":"Quick check: brightness, sharpness and orientation look fine.",iss.length?"bad":"");
+  if(r.ai){add("Claude: "+(r.ai.verdict==="good"?"looks good":r.ai.verdict==="retake"?"worth retaking":"usable")+(r.ai.issues&&r.ai.issues.length?". "+r.ai.issues.join("; "):"")+".",r.ai.verdict==="retake"?"bad":"");if(r.ai.fix)add("Tip: "+r.ai.fix)}
+  else if(AI&&AIimg)add("Ask Claude to also check framing, angle and clutter. That sends this photo to Claude.","");
+}
+const pt=e=>{const rc=vc.getBoundingClientRect();return{x:(e.clientX-rc.left)*vc.width/rc.width,y:(e.clientY-rc.top)*vc.height/rc.height}};
+vc.addEventListener("pointerdown",e=>{if(V.mode!=="blur")return;e.preventDefault();try{vc.setPointerCapture(e.pointerId)}catch(_){}const p=pt(e);V.drag={x0:p.x,y0:p.y,x1:p.x,y1:p.y};paintV()});
+vc.addEventListener("pointermove",e=>{if(!V.drag)return;const p=pt(e);V.drag.x1=p.x;V.drag.y1=p.y;paintV()});
+const endDrag=()=>{if(!V.drag)return;const b=V.drag;V.drag=null;if(Math.abs(b.x1-b.x0)>vc.width/80&&Math.abs(b.y1-b.y0)>vc.height/80)V.boxes.push(b);paintV()};
+vc.addEventListener("pointerup",endDrag);vc.addEventListener("pointercancel",endDrag);
+$("vBlur").addEventListener("click",()=>{V.boxes=[];setVMode("blur");paintV()});
+$("vUndoBox").addEventListener("click",()=>{V.boxes.pop();paintV()});
+$("vCancel").addEventListener("click",()=>{V.boxes=[];setVMode("view");paintV()});
+$("vApply").addEventListener("click",async()=>{
+  if(!V.boxes.length){$("vHint").textContent="Drag a box over the plate first.";return}
+  const w=V.img.naturalWidth,h=V.img.naturalHeight,cv=document.createElement("canvas");cv.width=w;cv.height=h;
+  const x=cv.getContext("2d");x.drawImage(V.img,0,0);
+  V.boxes.forEach(b=>{
+    const bx=Math.max(0,Math.round(Math.min(b.x0,b.x1))),by=Math.max(0,Math.round(Math.min(b.y0,b.y1)));
+    const bw=Math.min(w-bx,Math.round(Math.abs(b.x1-b.x0))),bh=Math.min(h-by,Math.round(Math.abs(b.y1-b.y0)));
+    if(bw<2||bh<2)return;
+    const s=Math.max(4,Math.round(Math.max(bw,bh)/10)),tw=Math.max(1,Math.ceil(bw/s)),th=Math.max(1,Math.ceil(bh/s));
+    const t=document.createElement("canvas");t.width=tw;t.height=th;
+    const tx=t.getContext("2d");tx.drawImage(cv,bx,by,bw,bh,0,0,tw,th);
+    x.imageSmoothingEnabled=false;x.drawImage(t,0,0,tw,th,bx,by,bw,bh);x.imageSmoothingEnabled=true;
+  });
+  const blob=await toBlob(cv,.92),key=pk(V.id),r=P[key];
+  if(!blob||!r)return;
+  setRec(key,{blob,orig:r.orig||r.blob,q:r.q,ai:r.ai,w:r.w,h:r.h});
+  V.img=await loadImg(blob);V.boxes=[];setVMode("view");paintV();render();toast("Plate blurred.");
+});
+$("vRestore").addEventListener("click",async()=>{
+  const key=pk(V.id),r=P[key];if(!r||!r.orig)return;
+  setRec(key,{blob:r.orig,orig:null,q:r.q,ai:r.ai,w:r.w,h:r.h});
+  V.img=await loadImg(r.orig);setVMode("view");paintV();render();toast("Back to the original.");
+});
+$("vCam").addEventListener("click",()=>{if(hasCam)openCam(V.id);else startPick(V.id,"cam")});
+$("vGal").addEventListener("click",()=>startPick(V.id,"gal"));
+armBtn($("vDel"),"Remove photo",()=>{dropRec(pk(V.id));closeModal("viewer");render();toast("Photo removed. The shot stays ticked.")});
+$("vClose").addEventListener("click",()=>closeModal("viewer"));
+$("vSave").addEventListener("click",async()=>{
+  if(!DL)return;const s=cur.find(x=>x.id===V.id),r=photo(V.id);if(!r)return;
+  try{await DL.save({filename:slug(s?s.name:"photo")+".jpg",data:r.blob});toast("Saved.")}catch(e){toast(dlError(e))}
+});
+/* ---------- ad writer ---------- */
+const adForm=$("adForm");
+function fillAd(){
+  const a=car().ad;
+  adForm.querySelectorAll("[data-k]").forEach(el=>{el.value=a[el.dataset.k]!=null?a[el.dataset.k]:(el.dataset.k==="unit"?"km":"")});
+  updateAd();
+}
+function buildAd(c){
+  const a=c.ad||{},T=TYPES[c.type],t=k=>String(a[k]||"").trim();
+  const name=[t("year"),t("make"),t("model"),t("trim")].filter(Boolean).join(" ")||("Used "+T.ad);
+  const kmN=num(a.km),km=kmN?kmN.toLocaleString("en-CA")+" "+(a.unit||"km"):"";
+  const prN=num(a.price),price=prN?"$"+prN.toLocaleString("en-CA"):"";
+  const title=[name,km,price].filter(Boolean).join(" | ");
+  const out=[];
+  const spec=[t("colour"),t("trans").toLowerCase(),t("drive")].filter(Boolean);
+  let p1=name+" for sale.";if(spec.length)p1+=" "+cap1(spec.join(", "))+".";if(km)p1+=" "+km+".";out.push(p1);
+  const ex=c.feats.map(f=>FEAT_AD[f]).filter(Boolean);if(ex.length)out.push("Comes with "+listJoin(ex)+".");
+  const cs=[];
+  if(a.acc==="none")cs.push("No accidents.");else if(a.acc==="minor")cs.push("One minor accident, properly repaired.");else if(a.acc==="major")cs.push("It has been in an accident; ask me for the details.");
+  if(c.dmg.length)cs.push("Known flaws, all shown in the photos: "+listJoin(c.dmg.map(m=>(KINDS[m.kind]||"damage").toLowerCase()+" on the "+locName(m.u,m.v,c.type)))+".");
+  else if(c.feats.includes("damage"))cs.push("Some wear and damage, shown honestly in the photos.");
+  if(cs.length)out.push(cs.join(" "));
+  const ot=[];
+  if(a.owners)ot.push(a.owners==="1"?"One owner.":a.owners==="2"?"Two owners.":"Three or more owners.");
+  const ti={paid:"Paid off, no liens.",clean:"Clean title.",financed:"Still financed; the loan gets paid out at the sale."}[a.title];if(ti)ot.push(ti);
+  if(ot.length)out.push(ot.join(" "));
+  if(t("vin"))out.push("VIN: "+t("vin").toUpperCase());
+  if(t("reason"))out.push("Reason for selling: "+t("reason").replace(/[.!]+$/,"")+".");
+  if(t("notes"))out.push(t("notes"));
+  let last=price?"Asking "+price+".":"";
+  if(t("loc"))last+=(last?" ":"")+"Located in "+t("loc").replace(/[.]+$/,"")+".";
+  last+=(last?" ":"")+"Message me to set up a viewing or test drive.";
+  out.push(last);
+  return title+"\n\n"+out.join("\n\n");
+}
+function askList(c){
+  const a=c.ad||{},q=[];
+  if(!num(a.km))q.push("How many kilometres are on it?");
+  if(!num(a.price))q.push("What are you asking for it?");
+  if(!a.acc)q.push("Has it been in any accidents?");
+  if(!a.title)q.push("Is it paid off, with no liens?");
+  if(!String(a.vin||"").trim())q.push("Can you send the VIN? Have it ready to share.");
+  if(!c.feats.includes("records"))q.push("Do you have maintenance records?");
+  if(!c.feats.includes("tires2")&&!/tire/i.test(a.notes||""))q.push("Does it come with winter tires?");
+  if(!String(a.reason||"").trim())q.push("Why are you selling it?");
+  return q;
+}
+function updateAd(){
+  const c=car(),a=c.ad;
+  if(!a.custom)$("adOut").value=buildAd(c);else if(document.activeElement!==$("adOut"))$("adOut").value=a.text||"";
+  $("adReset").hidden=!a.custom;
+  const q=askList(c),ul=$("askList");ul.textContent="";
+  if(!q.length){const li=document.createElement("li");li.textContent="Your ad already answers the usual questions.";ul.appendChild(li)}
+  q.forEach(s=>{const li=document.createElement("li");li.textContent=s;ul.appendChild(li)});
+}
+adForm.addEventListener("input",e=>{const k=e.target.dataset.k;if(!k)return;const c=car();c.ad[k]=e.target.value;touch();updateAd();if(["year","make","model"].includes(k))renderCars()});
+adForm.addEventListener("change",e=>{const k=e.target.dataset.k;if(!k)return;car().ad[k]=e.target.value;touch();updateAd()});
+$("adOut").addEventListener("input",e=>{const a=car().ad;a.custom=1;a.text=e.target.value;touch();$("adReset").hidden=false});
+$("adReset").addEventListener("click",()=>{const a=car().ad;a.custom=0;a.text="";touch();updateAd();$("adMsg").textContent=""});
+$("adCopy").addEventListener("click",()=>copyText($("adOut").value,$("adCopy"),"Copy ad"));
+/* ---------- saving, sharing, guide camera, install ---------- */
+DL={save:async({filename,data})=>{
+  const blob=data instanceof Blob?data:new Blob([data]);
+  const u=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(u),60000);
+  return{status:"saved"};
+}};
+const canShareFiles=(()=>{try{return!!(navigator.canShare&&navigator.canShare({files:[new File([new Blob(["x"],{type:"image/jpeg"})],"t.jpg",{type:"image/jpeg"})]}))}catch(e){return false}})();
+$("shareBtn").hidden=!canShareFiles;
+$("shareBtn").addEventListener("click",async()=>{
+  const c=car(),{keep}=postingSet();
+  const files=keep.map((s,i)=>new File([photo(s.id).blob],String(i+1).padStart(2,"0")+"-"+slug(s.name)+".jpg",{type:"image/jpeg"}));
+  if(!files.length)return;
+  if(!navigator.canShare({files})){$("zipMsg").textContent="Too many photos to share in one go here. Use Save as one zip file instead.";return}
+  try{await navigator.share({files,title:carName(c,app.cars.indexOf(c))+" photos"});$("zipMsg").textContent="Shared "+files.length+" photos in posting order."}
+  catch(e){if(!e||e.name!=="AbortError")$("zipMsg").textContent="Sharing didn't work. Try Save as one zip file."}
+});
+
+const hasCam=!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
+$("pkGuide").hidden=!hasCam;
+const CV={id:null,stream:null,blob:null,still:null};
+function camShot(){return cur.find(x=>x.id===CV.id)}
+function layoutGhost(){
+  const v=$("camVid"),g=$("camGhost"),vw=v.videoWidth||16,vh=v.videoHeight||9,W=innerWidth,H=innerHeight;
+  const sc=Math.min(W/vw,H/vh),dw=vw*sc,dh=vh*sc,fw=Math.min(dw,dh*1.5)*.92,fh=fw/1.5;
+  g.style.width=fw+"px";g.style.height=fh+"px";g.style.left=(W-fw)/2+"px";g.style.top=(H-fh)/2+"px";
+  const s=camShot();$("camTurn").hidden=!(s&&s.wide&&H>W*1.05);
+}
+async function openCam(id){
+  const s=cur.find(x=>x.id===id);if(!s)return;
+  if(!hasCam){startPick(id,"cam");return}
+  CV.id=id;CV.blob=null;
+  $("camTitle").textContent=s.n+". "+s.name;
+  $("camHint").textContent=s.tipT;
+  $("camGhost").innerHTML=sketch(s.fr,s.fl);
+  $("camStill").hidden=true;$("camLive").hidden=false;$("camReview").hidden=true;$("camGhost").hidden=false;
+  $("camView").hidden=false;
+  try{
+    CV.stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:"environment"},width:{ideal:4096},height:{ideal:2160}}});
+    const v=$("camVid");v.srcObject=CV.stream;await v.play().catch(()=>{});
+    v.onloadedmetadata=layoutGhost;layoutGhost();
+  }catch(e){
+    closeCam();
+    const n=e&&e.name;
+    toast(n==="NotAllowedError"?"Camera permission is off. Allow it for this app in Chrome's site settings, or use the camera app.":"Couldn't start the camera here. Opening your camera app instead.");
+    if(n!=="NotAllowedError")startPick(id,"cam");
+  }
+}
+function closeCam(){
+  if(CV.stream){CV.stream.getTracks().forEach(t=>t.stop());CV.stream=null}
+  $("camVid").srcObject=null;
+  if(CV.still){URL.revokeObjectURL(CV.still);CV.still=null}
+  $("camView").hidden=true;
+}
+addEventListener("resize",()=>{if(!$("camView").hidden)layoutGhost()});
+$("camShot").addEventListener("click",async()=>{
+  const v=$("camVid");if(!CV.stream||!v.videoWidth)return;
+  let blob=null;
+  const track=CV.stream.getVideoTracks()[0];
+  if(window.ImageCapture&&track){try{blob=await new ImageCapture(track).takePhoto()}catch(e){blob=null}}
+  if(!blob){const cv=document.createElement("canvas");cv.width=v.videoWidth;cv.height=v.videoHeight;cv.getContext("2d").drawImage(v,0,0);blob=await toBlob(cv,.92)}
+  if(!blob){toast("Couldn't take the photo. Try again.");return}
+  CV.blob=blob;if(CV.still)URL.revokeObjectURL(CV.still);CV.still=URL.createObjectURL(blob);
+  $("camStill").src=CV.still;$("camStill").hidden=false;$("camGhost").hidden=true;$("camTurn").hidden=true;
+  $("camLive").hidden=true;$("camReview").hidden=false;
+});
+$("camRetake").addEventListener("click",()=>{CV.blob=null;$("camStill").hidden=true;$("camGhost").hidden=false;$("camLive").hidden=false;$("camReview").hidden=true;layoutGhost()});
+$("camUse").addEventListener("click",async()=>{
+  const id=CV.id,blob=CV.blob;if(!id||!blob)return;
+  closeCam();
+  await intake(id,blob);
+  if(!$("viewer").hidden&&V.id===id&&photo(id)){V.img=await loadImg(photo(id).blob);setVMode("view");paintV();renderVQ()}
+});
+$("camClose").addEventListener("click",closeCam);
+$("camGal").addEventListener("click",()=>{const id=CV.id;closeCam();startPick(id,"gal")});
+$("camSys").addEventListener("click",()=>{const id=CV.id;closeCam();startPick(id,"cam")});
+$("pkGuide").addEventListener("click",()=>{const id=pendId;closeModal("pickSheet");openCam(id)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("camView").hidden)closeCam()});
+
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;$("installBtn").hidden=false});
+addEventListener("appinstalled",()=>{deferredInstall=null;$("installBtn").hidden=true;toast("Installed. Open it from your home screen.")});
+$("installBtn").addEventListener("click",async()=>{if(!deferredInstall)return;deferredInstall.prompt();try{await deferredInstall.userChoice}catch(e){}deferredInstall=null;$("installBtn").hidden=true});
+if("serviceWorker" in navigator)addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{})});
+
+/* ---------- start ---------- */
+renderCars();
+render();
+fillAd();
+renderFoot();
+loadPhotos();
+}
+</script>
+</body>
+</html>
