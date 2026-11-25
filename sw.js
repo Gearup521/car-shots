@@ -1,4 +1,4 @@
-const CACHE = "car-shots-v3";
+const CACHE = "car-shots-v4";
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 
 self.addEventListener("install", e => {
