@@ -73,6 +73,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--ink);outline:none}
 .opt[aria-pressed=true],.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{border-radius:999px;padding:6px 16px 6px 12px}
+a.chip{color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;padding:6px 16px}
 .chip.plus::before{content:"+";display:inline-block;width:1.1em;font-weight:700}
 .chip.plus[aria-pressed=true]::before{content:"✓"}
 .tips{background:var(--soft);border-radius:14px;padding:20px 22px}
@@ -257,6 +258,25 @@ input[type=checkbox]{width:22px;height:22px;min-height:0;padding:0;margin:2px 0 
 .how summary{cursor:pointer;font-weight:600;min-height:40px;display:flex;align-items:center}
 .how ol{margin:6px 0 0;padding-left:20px}
 @media(max-width:600px){.comprow{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.comprow input[data-k2=where]{grid-column:1/-1}.comprow .rrm{grid-column:1/-1;justify-self:start}.costrow{grid-template-columns:minmax(0,1fr) 6em}.costrow .rbtn,.costrow .rthumb{justify-self:start}}
+.nextcard{border-radius:14px;background:var(--soft);padding:16px 18px}
+.nc-dots{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.nd{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font:700 15px "Barlow Condensed",sans-serif;text-decoration:none;color:var(--mute);border:2px solid var(--line);background:var(--bg)}
+.nd.ok{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.nd.now{border-color:var(--red);color:var(--red)}
+.nextcard p{margin:0 0 10px;font-size:15px}
+.nextcard p b{font-family:"Barlow Condensed",Barlow,sans-serif;font-size:22px;display:block;line-height:1.1;margin-bottom:2px}
+.nc-warn{color:var(--red);font-weight:600}
+.nc-warn a{color:inherit}
+a.act{display:inline-flex;align-items:center;text-decoration:none}
+.pk{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:10px}
+.pk-h{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pk-h b{font-size:15px}
+.pk-v{margin-top:6px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px;max-height:9.5em;overflow:auto}
+.scam li::before{background:var(--ink)}
+.hog h3{margin-top:16px}
+.hoi{align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--line);min-height:44px}
+.hoi input{margin-top:3px}
+.hoi.on span{color:var(--mute);text-decoration:line-through}
 .pkfig{margin:12px auto 8px;border-radius:12px;overflow:hidden;background:var(--soft);aspect-ratio:3/2;max-height:230px}
 .pkbtns{display:grid;gap:8px;margin-top:16px}
 .pkbtns .act{min-height:48px}
@@ -331,7 +351,8 @@ input[type=checkbox]{width:22px;height:22px;min-height:0;padding:0;margin:2px 0 
   </aside>
 
   <main class="right">
-    <nav class="jump" aria-label="Sections"><a href="#cars">Cars</a><a href="#setup">Setup</a><a href="#shots">Shots</a><a href="#photos">Photos</a><a href="#video">Video</a><a href="#repairs">Repairs</a><a href="#ad">Ad</a><a href="#replies">Replies</a><a href="#buyers">Buyers</a><a href="#profit">Profit</a><a href="#sign">Sign</a><a href="#bos">Bill of sale</a><a href="#backup">Backup</a></nav>
+    <div class="nextcard" id="nextCard" aria-live="polite"></div>
+    <nav class="jump" aria-label="Sections"><a href="#cars">Cars</a><a href="#setup">Setup</a><a href="#shots">Shots</a><a href="#photos">Photos</a><a href="#video">Video</a><a href="#repairs">Repairs</a><a href="#ad">Ad</a><a href="#replies">Replies</a><a href="#post">Post</a><a href="#buyers">Buyers</a><a href="#profit">Profit</a><a href="#sign">Sign</a><a href="#bos">Bill of sale</a><a href="#handover">Handover</a><a href="#backup">Backup</a></nav>
 
     <section id="cars">
       <h2>Your cars</h2>
@@ -446,6 +467,7 @@ input[type=checkbox]{width:22px;height:22px;min-height:0;padding:0;margin:2px 0 
       <div class="scan" id="scanBox">
         <h3>Claude damage scan</h3>
         <p class="note" id="scanNote"></p>
+        <p class="note" id="useNote" style="margin-top:4px"></p>
         <div class="keyrow" id="keyRow" hidden>
           <label class="fl-l" for="apiKey">Anthropic API key</label>
           <div class="pair2"><input id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-..."><button class="act" type="button" id="keySave">Save key</button></div>
@@ -516,6 +538,14 @@ input[type=checkbox]{width:22px;height:22px;min-height:0;padding:0;margin:2px 0 
       <div id="replyList"></div>
     </section>
 
+    <section id="post">
+      <h2>Post it</h2>
+      <p class="note">Everything for your listing in order. Open the site, start a vehicle listing, then copy each piece across.</p>
+      <div class="chips" id="postSites" style="margin-top:12px"></div>
+      <div id="postKit"></div>
+      <div class="row"><button class="act" type="button" id="postListed">I posted it today</button><span class="note" id="postMsg"></span></div>
+    </section>
+
     <section id="buyers">
       <h2>Buyers</h2>
       <div class="fgrid">
@@ -536,6 +566,24 @@ input[type=checkbox]{width:22px;height:22px;min-height:0;padding:0;margin:2px 0 
           <li>Ride along, and keep the keys until you are both in the car.</li>
           <li>Count cash together; confirm a bank draft with the bank that issued it.</li>
           <li>Don't sign over ownership until the payment has fully cleared.</li>
+        </ul>
+      </div>
+      <div class="tips scam" style="margin-top:14px">
+        <h3 class="h3">Common scams</h3>
+        <ul>
+          <li><b>Overpayment:</b> they send more than the price and ask you to refund the difference. The payment bounces later. Never refund an overpayment.</li>
+          <li><b>Fake payment emails:</b> an e-transfer or "payment received" message with a link. Check for the money in your own banking app, never through a link.</li>
+          <li><b>Fake bank drafts and cheques:</b> call the issuing bank on a number you look up yourself, or go to the branch together.</li>
+          <li><b>"My shipper will pick it up":</b> buying sight unseen from far away, often with a sad story or urgency. Almost always a payment scam.</li>
+          <li><b>Verification codes:</b> a "buyer" asks you to read back a code sent to your phone to prove you're real. That code takes over your account. Never share it.</li>
+          <li><b>Links and fees:</b> requests to pay for a "vehicle history report" or "listing insurance" through their link. Don't pay or click.</li>
+        </ul>
+        <h3 class="h3" style="margin-top:14px">Before you hand over the keys</h3>
+        <ul>
+          <li>Cash: count it together, ideally at your bank where they can check the bills.</li>
+          <li>E-transfer: the money is showing in your account when you log in yourself, not just an email.</li>
+          <li>Bank draft: confirmed by the issuing bank, or bought in front of you at the branch.</li>
+          <li>No payment plans, personal cheques or "I'll send the rest tomorrow".</li>
         </ul>
       </div>
     </section>
@@ -602,6 +650,13 @@ input[type=checkbox]{width:22px;height:22px;min-height:0;padding:0;margin:2px 0 
       </div>
       <div class="row"><button class="act" type="button" id="bosPrint">Print or save as PDF</button><button class="act sec" type="button" id="bosSave">Save as file</button><button class="act sec" type="button" id="bosCopy">Copy text</button></div>
       <p class="note" id="bosMissing" style="margin-top:10px"></p>
+    </section>
+
+    <section id="handover">
+      <h2>Sale-day handover</h2>
+      <p class="note" id="hoSum"></p>
+      <div id="hoList"></div>
+      <div class="row"><button class="act sec" type="button" id="hoReset">Untick all</button></div>
     </section>
 
     <section id="backup">
@@ -823,6 +878,7 @@ function fix(c){
   if(!["sale","pending","sold"].includes(c.status))c.status="sale";
   c.priceLog=Array.isArray(c.priceLog)?c.priceLog:[];c.comps=Array.isArray(c.comps)?c.comps.filter(k=>k&&k.id):[];
   c.sign=c.sign&&typeof c.sign==="object"?c.sign:{};
+  c.hand=c.hand&&typeof c.hand==="object"?c.hand:{};
   if(!SITES[c.site])c.site="fb";
   if(!c.id)c.id=uid();
   return c;
@@ -961,6 +1017,7 @@ function render(){
   renderGallery();
   renderRepairs();
   if(typeof renderOverview==="function"&&$("carsBox"))renderOverview();
+  if(typeof renderNext==="function"&&$("nextCard")){renderNext();renderPost()}
   draw();
 }
 function renderFoot(){
@@ -1442,7 +1499,7 @@ function updateAd(){
   const q=askList(c),ul=$("askList");ul.textContent="";
   if(!q.length){const li=document.createElement("li");li.textContent="Your ad already answers the usual questions.";ul.appendChild(li)}
   q.forEach(s=>{const li=document.createElement("li");li.textContent=s;ul.appendChild(li)});
-  if(typeof renderReplies==="function"&&$("replyList")){renderReplies();renderSign();renderComps()}
+  if(typeof renderReplies==="function"&&$("replyList")){renderReplies();renderSign();renderComps();renderPost();renderNext()}
 }
 adForm.addEventListener("input",e=>{const k=e.target.dataset.k;if(!k)return;const c=car();c.ad[k]=e.target.value;touch();updateAd();if(["year","make","model"].includes(k))renderCars();if(k==="price"){$("askShow").value=e.target.value;renderProfitTable()}if(typeof fillBos==="function")fillBos()});
 adForm.addEventListener("change",e=>{const k=e.target.dataset.k;if(!k)return;car().ad[k]=e.target.value;touch();updateAd()});
@@ -1687,14 +1744,14 @@ async function apiImage(blob){
   cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);
   return blobToB64(await toBlob(cv,.85));
 }
-async function callClaude(content){
+async function callClaude(content,kind){
   let last=null;
   for(const model of["claude-sonnet-5-5","claude-sonnet-4-5"]){
     let r;
     try{r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"x-api-key":apiKey,"anthropic-version":"2023-06-01","content-type":"application/json","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model,max_tokens:3000,messages:[{role:"user",content}]})})}
     catch(e){throw{status:0,msg:"No connection to Claude. Check your internet and try again."}}
     let j=null;try{j=await r.json()}catch(e){}
-    if(r.ok)return j;
+    if(r.ok){countClaude(kind,j);return j}
     const type=j&&j.error&&j.error.type,msg=j&&j.error&&j.error.message||"";
     if(r.status===404||type==="not_found_error"){last={status:r.status,type,msg};continue}
     throw{status:r.status,type,msg};
@@ -1730,7 +1787,7 @@ $("scanBtn").addEventListener("click",async()=>{
     const list=pics.map((s,i)=>(i+1)+". "+s.name).join("\n");
     content.push({type:"text",text:"You are inspecting photos of a used "+TYPES[T].ad+" that the owner is getting ready to sell. Find visible exterior damage only: dents, scratches, scuffs, paint chips, rust, cracked or chipped glass or lights, and curb rash on wheels. Ignore dirt, water spots, reflections and shadows, and don't guess at damage you can't see. List each problem once, even if it shows in several photos.\n\nPhotos, in order:\n"+list+"\n\nName each location with one of these panels: "+Object.keys(PANELS).join(", ")+". Side is driver (the left side of a North American car), passenger, or center.\nFor each problem give a practical repair a local shop or the owner would do, and a rough price range in dollars at a typical independent shop.\n\nReply with only JSON like {\"items\":[{\"photo\":1,\"panel\":\"front door\",\"side\":\"driver\",\"kind\":\"dent\",\"size\":\"small\",\"deep\":false,\"confidence\":\"high\",\"fix\":\"Paintless dent repair\",\"cost_low\":100,\"cost_high\":200,\"note\":\"short detail of what you see\"}],\"summary\":\"one sentence\"}.\nkind is dent, scratch, rust, chip, crack or other. size is small (coin), medium (hand) or large. deep is true when the paint is broken through, metal is rusted through, or glass is cracked. confidence is high, medium or low. Use an empty items list if you see no damage."});
     $("scanMsg").textContent="Claude is looking at "+pics.length+" photo"+(pics.length===1?"":"s")+". This can take up to a minute…";
-    const j=await callClaude(content);
+    const j=await callClaude(content,"scan");
     const text=(j&&Array.isArray(j.content)?j.content:[]).filter(b=>b.type==="text").map(b=>b.text).join("");
     const data=parseJSON(text);
     if(!data||!Array.isArray(data.items))throw{status:0,msg:"Claude's answer didn't come through properly. Try again."};
@@ -1882,7 +1939,7 @@ $("vinClaude").addEventListener("click",async()=>{
   const cv=document.createElement("canvas");cv.width=v.videoWidth;cv.height=v.videoHeight;cv.getContext("2d").drawImage(v,0,0);
   const blob=await toBlob(cv,.9);closeVinScan();setVinMsg("Claude is reading the VIN…");
   try{
-    const j=await callClaude([{type:"image",source:{type:"base64",media_type:"image/jpeg",data:await apiImage(blob)}},{type:"text",text:"Read the 17-character vehicle identification number (VIN) in this photo. VINs never contain I, O or Q. Reply with only the VIN, or NONE if you can't read all 17 characters clearly."}]);
+    const j=await callClaude([{type:"image",source:{type:"base64",media_type:"image/jpeg",data:await apiImage(blob)}},{type:"text",text:"Read the 17-character vehicle identification number (VIN) in this photo. VINs never contain I, O or Q. Reply with only the VIN, or NONE if you can't read all 17 characters clearly."}],"vin");
     const t=(j.content||[]).filter(b=>b.type==="text").map(b=>b.text).join(" ");
     const m=t.toUpperCase().match(/[A-HJ-NPR-Z0-9]{17}/);
     if(m)lookupVin(m[0]);else setVinMsg("Claude couldn't read the whole VIN. Try again closer, with less glare, or type it.");
@@ -1902,7 +1959,7 @@ $("adClaude").addEventListener("click",async()=>{
     const facts=["Vehicle: "+[a.year,a.make,a.model,a.trim].filter(Boolean).join(" ")+(a.year?"":" ("+TYPES[c.type].ad+")"),a.km?"Odometer: "+a.km+" "+(a.unit||"km"):"",a.price?"Asking: $"+a.price:"",a.colour?"Colour: "+a.colour:"",a.engine?"Engine: "+a.engine:"",a.trans?"Transmission: "+a.trans:"",a.drive?"Drivetrain: "+a.drive:"",a.owners?"Owners: "+(a.owners==="3"?"3 or more":a.owners):"",a.acc?"Accidents: "+({none:"none",minor:"one minor, repaired",major:"yes, details on request"}[a.acc]||""):"",a.title?"Loan/title: "+({paid:"paid off, no liens",clean:"clean title",financed:"still financed, paid out at sale"}[a.title]||""):"",a.vin?"VIN: "+a.vin:"",a.reason?"Reason for selling: "+a.reason:"",a.loc?"Location: "+a.loc:"",a.notes?"Seller notes: "+a.notes:""].filter(Boolean);
     const extras=c.feats.map(f=>FEAT_AD[f]).filter(Boolean),flaws=c.dmg.filter(m=>!m.done).map(m=>(KINDS[m.kind]||"damage").toLowerCase()+" on the "+nameOf(m,c.type));
     content.push({type:"text",text:"Write a listing for a private used car sale on Facebook Marketplace or Kijiji.\n\nFacts from the seller:\n"+facts.join("\n")+(extras.length?"\nComes with: "+extras.join(", "):"")+(flaws.length?"\nKnown flaws that must be mentioned plainly: "+flaws.join("; "):"")+(pics.length?"\n\nThe photos show the car. You may mention what is clearly visible, like a clean interior, but don't guess at anything else.":"")+"\n\nRules: friendly, plain and honest; keep every fact as given and invent nothing; no emojis, hashtags or hype words; plain text; first line is a short title with year, make, model, kilometres and price where known; then 3 to 5 short paragraphs; under 170 words; end by inviting messages to book a viewing or test drive."});
-    const j=await callClaude(content);
+    const j=await callClaude(content,"ad");
     const t=(j.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("").trim();
     if(!t)throw{status:0,msg:"Claude didn't send back an ad. Try again."};
     $("adOut").value=t;a.custom=1;a.text=t;touch();$("adReset").hidden=false;$("adMsg").textContent="Written by Claude. Read it over before you post.";
@@ -1941,12 +1998,12 @@ function renderBuyers(){
   $("nextDrive").textContent=[up.length?"Next test drive: "+fmtWhen(up[0].when)+(up[0].name?" with "+up[0].name:"")+".":"",offers.length?"Best offer so far: "+money(Math.max(...offers))+".":""].filter(Boolean).join(" ");
   fillBuyerPick();
 }
-$("carStatus").addEventListener("change",e=>{const c=car();c.status=e.target.value;if(c.status==="sold"&&!c.soldDate)c.soldDate=todayISO();touch();renderBuyers();renderCars();renderProfitTable()});
+$("carStatus").addEventListener("change",e=>{const c=car();c.status=e.target.value;if(c.status==="sold"&&!c.soldDate)c.soldDate=todayISO();touch();renderBuyers();renderCars();renderProfitTable();renderNext();renderOverview()});
 $("soldPrice").addEventListener("input",e=>{car().soldPrice=e.target.value;touch();renderProfitTable()});
 $("soldDate").addEventListener("change",e=>{car().soldDate=e.target.value;touch()});
 $("addLead").addEventListener("click",()=>{const c=car(),l={id:uid(),name:"",contact:"",status:"new",source:SOURCES[0],when:"",offer:"",notes:""};c.leads.push(l);touch();renderBuyers();const el=$("ln-"+l.id);if(el)el.focus()});
 $("leadList").addEventListener("input",e=>{const k=e.target.dataset.l;if(!k)return;const card=e.target.closest("[data-lid]"),l=car().leads.find(x=>x.id===card.dataset.lid);if(!l)return;l[k]=e.target.value;touch();if(k==="name")fillBuyerPick()});
-$("leadList").addEventListener("change",e=>{const k=e.target.dataset.l;if(!k)return;const card=e.target.closest("[data-lid]"),l=car().leads.find(x=>x.id===card.dataset.lid);if(!l)return;l[k]=e.target.value;touch();if(k==="status"||k==="when"||k==="offer")setTimeout(renderBuyers,0)});
+$("leadList").addEventListener("change",e=>{const k=e.target.dataset.l;if(!k)return;const card=e.target.closest("[data-lid]"),l=car().leads.find(x=>x.id===card.dataset.lid);if(!l)return;l[k]=e.target.value;touch();if(k==="status"||k==="when"||k==="offer")setTimeout(()=>{renderBuyers();renderNext();renderOverview()},0)});
 $("leadList").addEventListener("click",e=>{const b=e.target.closest("[data-rml]");if(!b)return;const c=car();c.leads=c.leads.filter(l=>l.id!==b.dataset.rml);touch();renderBuyers()});
 
 /* ---------- profit ---------- */
@@ -2070,6 +2127,7 @@ $("bkSave").addEventListener("click",async()=>{
     files.unshift({name:"data.json",blob:new Blob([JSON.stringify({app:"car-shots",version:1,saved:new Date().toISOString(),state:app,photos:meta})],{type:"application/json"})});
     const zip=await makeZip(files);
     await DL.save({filename:"car-shots-backup-"+todayISO()+".zip",data:zip});
+    app.lastBackup=todayISO();save();if(typeof renderNext==="function")renderNext();
     $("bkMsg").textContent="Backup saved: "+app.cars.length+" car"+(app.cars.length===1?"":"s")+", "+Object.keys(meta).length+" photos. Keep it somewhere safe, like Google Drive.";
   }catch(e){$("bkMsg").textContent="Couldn't make the backup. Try again."}
   btn.disabled=false;
@@ -2268,7 +2326,7 @@ $("adFrBtn").addEventListener("click",async()=>{
   const src=$("adOut").value.trim();if(!src){$("adMsg").textContent="Write the ad first.";return}
   const btn=$("adFrBtn");btn.disabled=true;btn.textContent="Translating…";
   try{
-    const j=await callClaude([{type:"text",text:"Translate this private-sale used car ad into natural Canadian French, as a Quebec or francophone seller would write it on Marketplace or Kijiji. Keep every fact, number and price exactly; use km and $; no additions; plain text only.\n\nAd:\n"+src}]);
+    const j=await callClaude([{type:"text",text:"Translate this private-sale used car ad into natural Canadian French, as a Quebec or francophone seller would write it on Marketplace or Kijiji. Keep every fact, number and price exactly; use km and $; no additions; plain text only.\n\nAd:\n"+src}],"fr");
     const t=(j.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("").trim();
     if(!t)throw{status:0,msg:"Claude didn't send back a translation. Try again."};
     car().ad.fr=t;touch();renderFr();$("adMsg").textContent="French version ready below.";
@@ -2304,8 +2362,8 @@ function renderNudge(){
   $("priceLog").innerHTML=c.priceLog.length?'<p class="note" style="margin-top:10px">Price history: '+c.priceLog.map(p=>esc(p.date)+": "+(num(p.from)?money(num(p.from)):"?")+" to "+money(num(p.to))).join("; ")+"</p>":"";
 }
 $("nudgeBox").addEventListener("click",e=>{const b=e.target.closest("[data-drop]");if(b)dropPrice(car(),Number(b.dataset.drop))});
-$("listedOn").addEventListener("change",e=>{car().listedOn=e.target.value;touch();renderNudge();renderOverview()});
-$("listedToday").addEventListener("click",()=>{const c=car();c.listedOn=todayISO();$("listedOn").value=c.listedOn;touch();renderNudge();renderOverview();toast("Listed today. You'll get a price check after 10 days without strong offers.")});
+$("listedOn").addEventListener("change",e=>{car().listedOn=e.target.value;touch();renderNudge();renderOverview();renderNext();renderPost()});
+$("listedToday").addEventListener("click",()=>{const c=car();c.listedOn=todayISO();$("listedOn").value=c.listedOn;touch();renderNudge();renderOverview();renderNext();renderPost();toast("Listed today. You'll get a price check after 10 days without strong offers.")});
 
 /* ---------- test drives to calendar ---------- */
 const calStamp=d=>d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate())+"T"+pad2(d.getHours())+pad2(d.getMinutes())+"00";
@@ -2442,10 +2500,85 @@ $("spinDone").addEventListener("click",finishSpin);
 $("spinClose").addEventListener("click",()=>{SPN.frames=[];closeSpin()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("spinView").hidden){SPN.frames=[];closeSpin()}});
 
-function fillExtras2(){renderReplies();renderFr();renderComps();renderNudge();renderSign();renderSpin();renderOverview();
+function fillExtras2(){renderHandover();renderUse();renderReplies();renderFr();renderComps();renderNudge();renderSign();renderSpin();renderOverview();
   const c=car();$("listedOn").value=c.listedOn||"";$("adFrBtn").hidden=false}
 
 $("signCss").textContent=SIGN_CSS;
+
+/* ---------- Claude usage on this phone ---------- */
+function countClaude(kind,j){
+  const u=app.claude=app.claude&&typeof app.claude==="object"?app.claude:{n:0,kinds:{},tok:0};
+  u.n=(u.n||0)+1;u.kinds=u.kinds||{};u.kinds[kind||"other"]=(u.kinds[kind||"other"]||0)+1;
+  const us=j&&j.usage;if(us)u.tok=(u.tok||0)+(Number(us.input_tokens)||0)+(Number(us.output_tokens)||0);
+  save();renderUse();
+}
+function renderUse(){
+  const u=app.claude;if(!u||!u.n){$("useNote").textContent="";return}
+  const L={scan:["scan","scans"],ad:["ad","ads"],fr:["translation","translations"],vin:["VIN read","VIN reads"],other:["other","other"]};
+  const parts=Object.entries(u.kinds||{}).map(([k,v])=>v+" "+(L[k]||L.other)[v===1?0:1]);
+  $("useNote").textContent="Claude used "+u.n+" time"+(u.n===1?"":"s")+" from this phone ("+parts.join(", ")+(u.tok?", about "+Math.max(1,Math.round(u.tok/1000))+"k tokens":"")+"). Your actual spending is under Usage in the Claude Console.";
+}
+
+/* ---------- what's next ---------- */
+const SECNAME={setup:"Setup",shots:"Shots",repairs:"Repairs",ad:"Ad writer",post:"Post it",buyers:"Buyers",handover:"Handover"};
+const photoCount=c=>{const v=visible(c,c.level);return{n:v.filter(s=>P[c.id+":"+s.id]).length,t:v.length}};
+const STEPS=[
+  {t:"Set up the car",sec:"setup",done:c=>!!(c.ad.year&&c.ad.make&&c.ad.model),hint:c=>"Pick the vehicle type and add the year, make and model. Looking up the VIN fills them in."},
+  {t:"Take the photos",sec:"shots",done:c=>{const p=photoCount(c);return p.t>0&&p.n>=Math.ceil(p.t*.8)},hint:c=>{const p=photoCount(c);return p.n+" of "+p.t+" photos taken."}},
+  {t:"Sort the repairs",sec:"repairs",done:c=>!repItems(c).some(i=>!i.done&&i.pri==="fix"),hint:c=>{const n=repItems(c).filter(i=>!i.done&&i.pri==="fix").length;return n+" item"+(n===1?"":"s")+" marked fix before listing."}},
+  {t:"Finish the ad",sec:"ad",done:c=>!!(num(c.ad.price)&&num(c.ad.km)),hint:c=>"Add the asking price and kilometres so the ad is complete."},
+  {t:"Post it",sec:"post",done:c=>!!c.listedOn||c.status!=="sale",hint:c=>"The posting kit has everything to copy into your listing."},
+  {t:"Sell it",sec:"buyers",done:c=>c.status==="sold",hint:c=>{const o=c.leads.map(l=>num(l.offer)).filter(Boolean);return c.leads.length?c.leads.length+" buyer"+(c.leads.length===1?"":"s")+" so far"+(o.length?", best offer "+money(Math.max(...o)):"")+".":"Track buyers, offers and test drives here."}},
+  {t:"Hand it over",sec:"handover",done:c=>hoDone(c)>=hoItems(c).length,hint:c=>hoDone(c)+" of "+hoItems(c).length+" handover steps done."}
+];
+function renderNext(){
+  const c=car(),st=STEPS.map(x=>!!x.done(c)),idx=st.indexOf(false);
+  let h='<div class="nc-dots">'+STEPS.map((x,i)=>'<a class="nd'+(st[i]?" ok":"")+(i===idx?" now":"")+'" href="#'+x.sec+'" aria-label="Step '+(i+1)+": "+x.t+(st[i]?", done":"")+'">'+(st[i]?"✓":i+1)+"</a>").join("")+"</div>";
+  h+=idx<0?"<p><b>All done for this car.</b>Every step is ticked, from setup to handover.</p>":"<p><b>Step "+(idx+1)+" of "+STEPS.length+": "+STEPS[idx].t+"</b>"+esc(STEPS[idx].hint(c))+'</p><a class="act" href="#'+STEPS[idx].sec+'">Go to '+SECNAME[STEPS[idx].sec]+"</a>";
+  const anyPhotos=Object.keys(P).some(k=>!k.endsWith(":video")),bd=app.lastBackup?daysSince(app.lastBackup):null;
+  if(anyPhotos&&(bd==null||bd>=7))h+='<p class="nc-warn" style="margin:12px 0 0">'+(bd==null?"You haven't saved a backup yet.":"Last backup was "+bd+" days ago.")+' Everything lives only on this phone. <a href="#backup">Back up now</a></p>';
+  $("nextCard").innerHTML=h;
+}
+
+/* ---------- posting kit ---------- */
+const SITE_HOME={fb:["Facebook Marketplace","https://www.facebook.com/marketplace/"],kj:["Kijiji","https://www.kijiji.ca/"],at:["AutoTrader.ca","https://www.autotrader.ca/"],cl:["Craigslist","https://www.craigslist.org/"]};
+let POSTF=[];
+function renderPost(){
+  const c=car(),a=c.ad,txt=($("adOut").value||"").trim(),lines=txt.split(/\n/),title=(lines[0]||"").trim(),desc=lines.slice(1).join("\n").trim();
+  $("postSites").innerHTML=Object.entries(SITE_HOME).sort((x,y)=>(y[0]===c.site)-(x[0]===c.site)).map(([k,v])=>'<a class="chip" href="'+v[1]+'" target="_blank" rel="noopener">Open '+v[0]+"</a>").join("");
+  POSTF=[["Title",title],["Price",num(a.price)?String(num(a.price)):""],["Kilometres",num(a.km)?String(num(a.km)):""],["Description",desc],["VIN",(a.vin||"").toUpperCase()],["French description",a.fr?a.fr.split(/\n/).slice(1).join("\n").trim():""]].filter(f=>f[1]);
+  let h=POSTF.map((f,i)=>'<div class="pk"><div class="pk-h"><b>'+f[0]+'</b><button class="act sec" type="button" data-pk="'+i+'">Copy</button></div><div class="pk-v">'+esc(f[1])+"</div></div>").join("");
+  if(!txt)h='<div class="empty">Write your ad first in the Ad writer; the pieces show up here.</div>';
+  const{keep,site}=postingSet(),sn=(SITE_HOME[c.site]||["your site"])[0];
+  h+='<div class="pk"><div class="pk-h"><b>Photos</b></div><p class="note" style="margin-top:6px">'+(keep.length?keep.length+" photos in posting order"+(site.cap?" for "+sn:"")+", cover photo first. Upload them in this order.":"No photos yet. Take them in the shot list first.")+"</p>"+(keep.length?'<div class="row" style="margin-top:8px">'+(canShareFiles?'<button class="act" type="button" data-pkshare="1">Share photos</button>':"")+'<button class="act sec" type="button" data-pkzip="1">Save as zip</button></div>':"")+"</div>";
+  if(vidRec())h+='<div class="pk"><div class="pk-h"><b>Walk-around video</b><button class="act sec" type="button" data-pkvid="1">'+(canShareFiles?"Share video":"Save video")+"</button></div></div>";
+  $("postKit").innerHTML=h;
+  $("postMsg").textContent=c.listedOn?"Listed on "+c.listedOn+".":"";
+}
+$("postKit").addEventListener("click",e=>{
+  const b=e.target.closest("[data-pk]");if(b){copyText(POSTF[b.dataset.pk][1],b,"Copy");return}
+  if(e.target.closest("[data-pkshare]")){$("shareBtn").click();return}
+  if(e.target.closest("[data-pkzip]")){$("zipBtn").click();toast("Saving your photos as a zip…");return}
+  if(e.target.closest("[data-pkvid]")){const v=$("vidShare")||$("vidSave");if(v)v.click()}
+});
+$("postListed").addEventListener("click",()=>{const c=car();c.listedOn=todayISO();touch();$("listedOn").value=c.listedOn;renderPost();renderNext();renderNudge();renderOverview();toast("Marked as listed today. You'll get a price check if it sits for 10 days.")});
+
+/* ---------- sale-day handover ---------- */
+function hoItems(c){
+  const a=[["before","Remove everything personal: glovebox, console, trunk, under the seats and sun visors."],["before","Unpair your phone and clear saved addresses, contacts and home location from the screen."],["before","Clear the garage-door buttons and take out toll, parking or gate passes."],["before","Remove the car from the maker's app or any connected service you signed up for."],["before","Gather every key and fob"+(c.feats.includes("remote")?", including the remote start fob":"")+", plus the owner's manual"+(c.feats.includes("records")?" and service records":"")+"."]];
+  if(c.feats.includes("tires2"))a.push(["before","Have the second set of tires ready to load."]);
+  a.push(["sale","Confirm the payment yourself: cash counted, or the money showing in your own bank account."],["sale","Both sign the bill of sale, and each keep a copy."],["sale","Sign over the ownership or registration the way your province or state requires."],["sale","Check whether your licence plates stay with you or the car, and take them off if they're yours."],["sale","Write down the odometer reading and the time of sale."]);
+  a.push(["after","Cancel or move your insurance."],["after","File a notice of sale with your licensing office if your area requires one."],["after","Take the listing down everywhere and let anyone still waiting know."],["after","Mark the car as Sold in Buyers and enter the final price."]);
+  return a.map(x=>({id:slug(x[1]).slice(0,40),g:x[0],t:x[1]}));
+}
+const hoDone=c=>hoItems(c).filter(x=>c.hand[x.id]).length;
+function renderHandover(){
+  const c=car(),items=hoItems(c),G=[["before","Before the buyer arrives"],["sale","At the sale"],["after","After the sale"]];
+  $("hoList").innerHTML=G.map(([g,l])=>'<div class="hog"><h3 class="h3">'+l+"</h3>"+items.filter(x=>x.g===g).map(x=>'<label class="chk hoi'+(c.hand[x.id]?" on":"")+'"><input type="checkbox" data-ho="'+x.id+'"'+(c.hand[x.id]?" checked":"")+"><span>"+esc(x.t)+"</span></label>").join("")+"</div>").join("");
+  $("hoSum").textContent=hoDone(c)+" of "+items.length+" done. Tick each one as you go on sale day.";
+}
+$("hoList").addEventListener("change",e=>{const k=e.target.dataset.ho;if(!k)return;const c=car();if(e.target.checked)c.hand[k]=1;else delete c.hand[k];touch();e.target.closest(".hoi").classList.toggle("on",e.target.checked);$("hoSum").textContent=hoDone(c)+" of "+hoItems(c).length+" done. Tick each one as you go on sale day.";renderNext()});
+armBtn($("hoReset"),"Untick all",()=>{car().hand={};touch();renderHandover();renderNext()});
 
 /* ---------- start ---------- */
 renderCars();
