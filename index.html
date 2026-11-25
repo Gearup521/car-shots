@@ -277,6 +277,16 @@ a.act{display:inline-flex;align-items:center;text-decoration:none}
 .hoi{align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--line);min-height:44px}
 .hoi input{margin-top:3px}
 .hoi.on span{color:var(--mute);text-decoration:line-through}
+.dealercard{border:2px solid var(--ink);border-radius:12px;padding:10px 14px 12px}
+.dealstat{margin:10px 0 0;font-weight:600;color:var(--red)}
+.dealstat.ok{color:light-dark(#1d7a3d,#5fd38a)}
+.allin{margin:12px 0 0;font-size:15px}
+.allin b{font-family:"Barlow Condensed",Barlow,sans-serif;font-size:24px}
+.disc{padding:10px 0;border-bottom:1px solid var(--line)}
+.disc label{display:block;font-size:15px;font-weight:600}
+.disc .pair2{grid-template-columns:10em minmax(0,1fr)}
+.feerow{grid-template-columns:minmax(0,1fr) 7em auto}
+.bossum{background:var(--soft);border-radius:10px;padding:10px 14px;font-size:15px}
 .pkfig{margin:12px auto 8px;border-radius:12px;overflow:hidden;background:var(--soft);aspect-ratio:3/2;max-height:230px}
 .pkbtns{display:grid;gap:8px;margin-top:16px}
 .pkbtns .act{min-height:48px}
@@ -352,7 +362,7 @@ a.act{display:inline-flex;align-items:center;text-decoration:none}
 
   <main class="right">
     <div class="nextcard" id="nextCard" aria-live="polite"></div>
-    <nav class="jump" aria-label="Sections"><a href="#cars">Cars</a><a href="#setup">Setup</a><a href="#shots">Shots</a><a href="#photos">Photos</a><a href="#video">Video</a><a href="#repairs">Repairs</a><a href="#ad">Ad</a><a href="#replies">Replies</a><a href="#post">Post</a><a href="#buyers">Buyers</a><a href="#profit">Profit</a><a href="#sign">Sign</a><a href="#bos">Bill of sale</a><a href="#handover">Handover</a><a href="#backup">Backup</a></nav>
+    <nav class="jump" aria-label="Sections"><a href="#cars">Cars</a><a href="#setup">Setup</a><a href="#shots">Shots</a><a href="#photos">Photos</a><a href="#video">Video</a><a href="#repairs">Repairs</a><a href="#deal" id="navDeal" hidden>Dealer file</a><a href="#ad">Ad</a><a href="#replies">Replies</a><a href="#post">Post</a><a href="#buyers">Buyers</a><a href="#profit">Profit</a><a href="#sign">Sign</a><a href="#bos">Bill of sale</a><a href="#handover">Handover</a><a href="#backup">Backup</a></nav>
 
     <section id="cars">
       <h2>Your cars</h2>
@@ -360,6 +370,20 @@ a.act{display:inline-flex;align-items:center;text-decoration:none}
     </section>
 
     <section class="setup" id="setup">
+      <div class="dealercard">
+        <label class="chk"><input type="checkbox" id="bizOn"> I'm a licensed dealer in Alberta</label>
+        <div class="fgrid" id="bizBox" hidden style="margin-top:8px">
+          <div class="fl"><label for="biz-name">Business name</label><input id="biz-name" data-z="name" autocomplete="organization"></div>
+          <div class="fl"><label for="biz-lic">AMVIC licence number</label><input id="biz-lic" data-z="lic" autocomplete="off"></div>
+          <div class="fl full"><label for="biz-addr">Business address</label><input id="biz-addr" data-z="addr" autocomplete="street-address"></div>
+          <div class="fl"><label for="biz-phone">Business phone</label><input id="biz-phone" data-z="phone" type="tel" autocomplete="tel"></div>
+          <div class="fl"><label for="biz-gst">GST number (optional)</label><input id="biz-gst" data-z="gst" autocomplete="off"></div>
+          <div class="fl"><label for="biz-sales">Salesperson name</label><input id="biz-sales" data-z="sales" autocomplete="name"></div>
+          <div class="fl"><label for="biz-salesReg">Salesperson registration no.</label><input id="biz-salesReg" data-z="salesReg" autocomplete="off"></div>
+        </div>
+        <p class="note" id="bizNote" style="margin-top:6px">Turns on the dealer file, the comprehensive bill of sale, all-in pricing in ads, and a dealer handover checklist.</p>
+      </div>
+
       <div>
         <h2>Car</h2>
         <div class="carrow">
@@ -487,6 +511,42 @@ a.act{display:inline-flex;align-items:center;text-decoration:none}
       <div class="row"><button class="act sec" type="button" id="addWork">Add other work</button></div>
       <div class="repsum" id="repSum"></div>
       <div class="row"><button class="act" type="button" id="repCopy">Copy notes</button><button class="act sec" type="button" id="repSave">Save as file</button><button class="act sec" type="button" id="repShare" hidden>Share notes</button></div>
+    </section>
+
+    <section id="deal" hidden>
+      <h2>Dealer file</h2>
+      <p class="note">What Alberta asks of a licensed business before this unit is sold. Built from the alberta.ca pages for automotive businesses; confirm anything unclear with AMVIC.</p>
+      <p class="dealstat" id="dealStat"></p>
+      <div class="fgrid" style="margin-top:12px">
+        <div class="fl"><label for="deal-stock">Stock number</label><input id="deal-stock" data-dl="stock" autocomplete="off"></div>
+        <div class="fl"><label for="deal-body">Body type</label><input id="deal-body" data-dl="body" autocomplete="off" placeholder="4-door SUV"></div>
+      </div>
+      <h3 class="h3" style="margin-top:20px">All-in price</h3>
+      <p class="note">Every fee you'll charge goes into the advertised price; only GST is added on top.</p>
+      <div id="feeList"></div>
+      <div class="chips" id="feePresets" style="margin-top:10px">
+        <button class="chip plus" type="button" data-fee="Documentation fee">Documentation fee</button>
+        <button class="chip plus" type="button" data-fee="Administration fee">Administration fee</button>
+        <button class="chip plus" type="button" data-fee="Licensing and registration">Licensing and registration</button>
+        <button class="chip plus" type="button" data-fee="Inspection fee">Inspection fee</button>
+        <button class="chip plus" type="button" data-fee="">Other fee</button>
+      </div>
+      <p class="allin" id="allIn"></p>
+      <h3 class="h3" style="margin-top:20px">Mechanical fitness assessment</h3>
+      <div class="fgrid">
+        <div class="fl"><label for="deal-mfaDate">Completed on</label><input id="deal-mfaDate" data-dl="mfaDate" type="date"></div>
+        <div class="fl"><label for="deal-mfaTech">Journeyman technician</label><input id="deal-mfaTech" data-dl="mfaTech" autocomplete="off"></div>
+      </div>
+      <p class="note" id="mfaStat" style="margin-top:6px"></p>
+      <h3 class="h3" style="margin-top:20px">Vehicle history disclosure</h3>
+      <p class="note">Section 31.1 of the Automotive Business Regulation, based on what you know or should know. It's printed as an addendum the buyer signs.</p>
+      <div id="discList"></div>
+      <div class="row"><button class="act sec" type="button" id="discPrint">Print disclosure form</button></div>
+      <h3 class="h3" style="margin-top:20px">Liens</h3>
+      <div class="fgrid">
+        <div class="fl"><label for="deal-lienDate">Lien search done on</label><input id="deal-lienDate" data-dl="lienDate" type="date"></div>
+        <div class="fl"><label for="deal-lienFound">Result</label><select id="deal-lienFound" data-dl="lienFound"><option value="">Not set</option><option value="none">No liens</option><option value="yes">Lien found, payout arranged</option></select></div>
+      </div>
     </section>
 
     <section id="ad">
@@ -633,8 +693,8 @@ a.act{display:inline-flex;align-items:center;text-decoration:none}
     </section>
 
     <section id="bos">
-      <h2>Bill of sale</h2>
-      <p class="note" style="margin-bottom:12px">Fills in from this car's details. Some provinces and states have their own official form or extra steps, like a lien search or a safety certificate, so check your local rules before you sign.</p>
+      <h2 id="bosHead">Bill of sale</h2>
+      <p class="note" id="bosNote" style="margin-bottom:12px">Fills in from this car's details. Some provinces and states have their own official form or extra steps, like a lien search or a safety certificate, so check your local rules before you sign.</p>
       <div class="fgrid" id="bosForm">
         <div class="fl"><label for="bos-seller">Seller's name</label><input id="bos-seller" data-b="seller" autocomplete="name"></div>
         <div class="fl"><label for="bos-sellerAddr">Seller's address</label><input id="bos-sellerAddr" data-b="sellerAddr" autocomplete="street-address"></div>
@@ -647,6 +707,23 @@ a.act{display:inline-flex;align-items:center;text-decoration:none}
         <div class="fl"><label for="bos-odo">Odometer at sale</label><input id="bos-odo" data-b="odo" inputmode="numeric" autocomplete="off"></div>
         <label class="chk full"><input type="checkbox" id="bos-asis" data-b="asis"> Sold as is, with no warranty</label>
         <div class="fl full"><label for="bos-terms">Other terms (optional)</label><textarea id="bos-terms" data-b="terms" rows="2"></textarea></div>
+      </div>
+      <div class="fgrid" id="bosDealer" hidden style="margin-top:12px">
+        <div class="fl"><label for="bd-buyerId">Buyer's government ID number</label><input id="bd-buyerId" data-b="buyerId" autocomplete="off"></div>
+        <div class="fl"><label for="bd-delivery">Delivery date</label><input id="bd-delivery" data-b="delivery" type="date"></div>
+        <div class="fl"><label for="bd-deposit">Deposit or down payment ($)</label><input id="bd-deposit" data-b="deposit" inputmode="numeric" autocomplete="off"></div>
+        <div class="fl"><label for="bd-payTiming">When the balance is due</label><input id="bd-payTiming" data-b="payTiming" placeholder="In full on delivery" autocomplete="off"></div>
+        <div class="fl"><label for="bd-extrasText">Extra equipment or options</label><input id="bd-extrasText" data-b="extrasText" placeholder="Remote starter installed" autocomplete="off"></div>
+        <div class="fl"><label for="bd-extrasAmt">Their cost ($)</label><input id="bd-extrasAmt" data-b="extrasAmt" inputmode="numeric" autocomplete="off"></div>
+        <div class="fl full"><label for="bd-free">Items or incentives included at no charge</label><input id="bd-free" data-b="free" placeholder="Winter mats, full tank" autocomplete="off"></div>
+        <div class="fl"><label for="bd-tradeDesc">Trade-in vehicle (year, make, model)</label><input id="bd-tradeDesc" data-b="tradeDesc" autocomplete="off"></div>
+        <div class="fl"><label for="bd-tradeVin">Trade-in VIN</label><input id="bd-tradeVin" data-b="tradeVin" autocomplete="off"></div>
+        <div class="fl"><label for="bd-tradeAllow">Trade-in allowance ($)</label><input id="bd-tradeAllow" data-b="tradeAllow" inputmode="numeric" autocomplete="off"></div>
+        <div class="fl"><label for="bd-tradeLien">Loan owing on the trade-in ($)</label><input id="bd-tradeLien" data-b="tradeLien" inputmode="numeric" autocomplete="off"></div>
+        <div class="fl"><label for="bd-gst">GST ($, blank to work out 5%)</label><input id="bd-gst" data-b="gst" inputmode="decimal" autocomplete="off"></div>
+        <label class="chk"><input type="checkbox" id="bd-financing" data-b="financing"> We arranged financing</label>
+        <div class="fl full"><label for="bd-cond">Restrictions, limitations and conditions</label><textarea id="bd-cond" data-b="cond" rows="2"></textarea></div>
+        <div class="bossum full" id="bosSum"></div>
       </div>
       <div class="row"><button class="act" type="button" id="bosPrint">Print or save as PDF</button><button class="act sec" type="button" id="bosSave">Save as file</button><button class="act sec" type="button" id="bosCopy">Copy text</button></div>
       <p class="note" id="bosMissing" style="margin-top:10px"></p>
@@ -1451,7 +1528,7 @@ function fillAd(){
   updateAd();
   if(typeof fillExtras==="function")fillExtras();
 }
-function buildAd(c){
+function buildAdPrivate(c){
   const a=c.ad||{},T=TYPES[c.type],t=k=>String(a[k]||"").trim();
   const name=[t("year"),t("make"),t("model"),t("trim")].filter(Boolean).join(" ")||("Used "+T.ad);
   const kmN=num(a.km),km=kmN?kmN.toLocaleString("en-CA")+" "+(a.unit||"km"):"";
@@ -1480,7 +1557,7 @@ function buildAd(c){
   out.push(last);
   return title+"\n\n"+out.join("\n\n");
 }
-function askList(c){
+function askListPrivate(c){
   const a=c.ad||{},q=[];
   if(!num(a.km))q.push("How many kilometres are on it?");
   if(!num(a.price))q.push("What are you asking for it?");
@@ -2014,7 +2091,7 @@ function renderProfitForm(){
 }
 function renderProfitTable(){
   const c=car(),buy=num(c.money.buy),other=c.money.costs.reduce((s,k)=>s+num(k.amt),0),rep=totals(repItems(c));
-  const ask=num(c.ad.price),sold=c.status==="sold"?num(c.soldPrice):0;
+  const ask=adPrice(c),sold=c.status==="sold"?num(c.soldPrice):0;
   const costLo=buy+other+rep.lo,costHi=buy+other+rep.hi;
   const rng=(a,b)=>Math.round(a)===Math.round(b)?money(a):money(a)+" to "+money(b);
   const prof=p=>{const lo=p-costHi,hi=p-costLo;const f=v=>(v<0?"−":"")+money(Math.abs(v));return Math.round(lo)===Math.round(hi)?f(lo):f(lo)+" to "+f(hi)};
@@ -2024,7 +2101,7 @@ function renderProfitTable(){
   if(!buy){h+='<p class="note" style="margin-top:10px">Enter what you paid to see your profit.</p>';$("profitTable").innerHTML=h;return}
   const prows=[];
   if(sold)prows.push(["Sold for "+money(sold),prof(sold),cls(sold)]);
-  if(ask){prows.push(["At asking, "+money(ask),prof(ask),cls(ask)]);prows.push(["5% less, "+money(ask*.95),prof(ask*.95),cls(ask*.95)]);prows.push(["10% less, "+money(ask*.9),prof(ask*.9),cls(ask*.9)])}
+  if(ask){prows.push([(isDealer()?"At all-in price, ":"At asking, ")+money(ask),prof(ask),cls(ask)]);prows.push(["5% less, "+money(ask*.95),prof(ask*.95),cls(ask*.95)]);prows.push(["10% less, "+money(ask*.9),prof(ask*.9),cls(ask*.9)])}
   h+='<h3 class="h3" style="margin-top:18px">Profit</h3><table class="ptab"><tbody>'+(prows.length?prows.map(r=>'<tr class="'+r[2]+'"><td>'+r[0]+'</td><td class="amt">'+r[1]+"</td></tr>").join(""):'<tr><td>Add an asking price to see profit</td><td></td></tr>')+'<tr class="tot"><td>Break-even price</td><td class="amt">'+rng(costLo,costHi)+"</td></tr></tbody></table>";
   $("profitTable").innerHTML=h;
 }
@@ -2041,8 +2118,8 @@ function bosData(){
     vehicle:[a.year,a.make,a.model,a.trim].filter(Boolean).join(" "),vin:a.vin||"",colour:a.colour||"",lien:a.title==="paid"||a.title==="clean"?"The seller states the vehicle is free of all liens and debts.":a.title==="financed"?"The vehicle has an outstanding loan, which the seller will pay out from the sale proceeds.":""};
 }
 function fillBos(){
-  const d=bosData();
-  document.querySelectorAll("#bosForm [data-b]").forEach(el=>{const k=el.dataset.b;if(el.type==="checkbox")el.checked=!!d[k];else el.value=d[k]!=null?d[k]:""});
+  const d=Object.assign({},car().bos,bosData());
+  document.querySelectorAll("#bos [data-b]").forEach(el=>{const k=el.dataset.b;if(el.type==="checkbox")el.checked=!!d[k];else el.value=d[k]!=null?d[k]:""});
   fillBuyerPick();bosMissing();
 }
 function fillBuyerPick(){
@@ -2053,12 +2130,12 @@ function fillBuyerPick(){
 $("bos-pickBuyer").addEventListener("change",e=>{const c=car(),l=c.leads.find(x=>x.id===e.target.value);if(!l)return;c.bos.buyer=l.name;if(!c.bos.price){const sp=c.status==="sold"&&num(c.soldPrice)?c.soldPrice:num(l.offer)?l.offer:"";if(sp)c.bos.price=sp}touch();fillBos()});
 $("bosForm").addEventListener("input",e=>{const k=e.target.dataset.b;if(!k)return;car().bos[k]=e.target.type==="checkbox"?e.target.checked:e.target.value;touch();bosMissing()});
 $("bosForm").addEventListener("change",e=>{const k=e.target.dataset.b;if(!k)return;car().bos[k]=e.target.type==="checkbox"?e.target.checked:e.target.value;touch();bosMissing()});
-function bosMissing(){
+function bosMissingPrivate(){
   const d=bosData(),miss=[];
   if(!d.seller)miss.push("seller's name");if(!d.buyer)miss.push("buyer's name");if(!d.vin)miss.push("VIN (in the ad writer)");if(!d.vehicle)miss.push("year, make and model (in the ad writer)");if(!num(d.price))miss.push("price");
   $("bosMissing").textContent=miss.length?"Still missing: "+miss.join(", ")+".":"Everything's filled in.";
 }
-function bosHTML(){
+function bosHTMLPrivate(){
   const d=bosData(),e=esc,price=num(d.price),odo=num(d.odo);
   const dt=d.date?new Date(d.date+"T12:00:00").toLocaleDateString("en-CA",{year:"numeric",month:"long",day:"numeric"}):"";
   const row=(k,v)=>"<tr><th>"+k+"</th><td>"+(v?e(v):"&nbsp;")+"</td></tr>";
@@ -2073,11 +2150,11 @@ function bosHTML(){
     +(d.terms?"<p>"+e(d.terms)+"</p>":"")
     +'<div class="sig"><div><span></span>Seller signature</div><div><span></span>Date</div><div><span></span>Buyer signature</div><div><span></span>Date</div></div></div>';
 }
-function bosText(){
+function bosTextPrivate(){
   const d=bosData(),price=num(d.price),odo=num(d.odo);
   return["BILL OF SALE: MOTOR VEHICLE","Date of sale: "+d.date,"","VEHICLE","Year, make, model: "+d.vehicle,"VIN: "+d.vin,"Colour: "+d.colour,"Odometer: "+(odo?odo.toLocaleString("en-CA")+" "+d.unit:""),"","SELLER","Name: "+d.seller,"Address: "+d.sellerAddr,"","BUYER","Name: "+d.buyer,"Address: "+d.buyerAddr,"","SALE","Price: "+(price?money(price):"")+", paid by "+d.pay.toLowerCase()+". The seller confirms receipt of this payment.",d.lien,d.asis?"Sold as is, with no warranty, express or implied. The buyer has had the chance to inspect it.":"","The seller states the odometer reading is accurate to the best of their knowledge.",d.terms,"","Seller signature: ____________________  Date: __________","Buyer signature:  ____________________  Date: __________"].filter(x=>x!=="").join("\n");
 }
-const BOS_CSS="body{font:15px/1.5 Georgia,serif;color:#111;margin:32px}h1{font-size:22px;margin:0 0 6px}h2{font-size:15px;margin:18px 0 6px;text-transform:none;border-bottom:1px solid #999}table{border-collapse:collapse;width:100%}th{text-align:left;width:34%;font-weight:normal;color:#444;padding:4px 8px 4px 0;vertical-align:top}td{border-bottom:1px solid #ccc;padding:4px 0}.sig{display:grid;grid-template-columns:2fr 1fr;gap:28px 24px;margin-top:40px}.sig div{font-size:13px;color:#444}.sig span{display:block;border-bottom:1px solid #111;height:34px;margin-bottom:4px}";
+const BOS_CSS="body{font:15px/1.5 Georgia,serif;color:#111;margin:32px}h1{font-size:22px;margin:0 0 6px}h2{font-size:15px;margin:18px 0 6px;text-transform:none;border-bottom:1px solid #999}table{border-collapse:collapse;width:100%}th{text-align:left;width:34%;font-weight:normal;color:#444;padding:4px 8px 4px 0;vertical-align:top}td{border-bottom:1px solid #ccc;padding:4px 0}.sig{display:grid;grid-template-columns:2fr 1fr;gap:28px 24px;margin-top:40px}.sig div{font-size:13px;color:#444}.sig span{display:block;border-bottom:1px solid #111;height:34px;margin-bottom:4px}td.r{text-align:right;white-space:nowrap}tr.t th,tr.t td{font-weight:bold;border-top:1px solid #111}";
 $("bosPrint").addEventListener("click",()=>{$("printArea").innerHTML="<style>@media print{"+BOS_CSS.replace(/body\{/,"#printArea{")+"}</style>"+bosHTML();try{window.print()}catch(e){toast("Printing isn't available here. Use Save as file instead.")}});
 $("bosSave").addEventListener("click",async()=>{const c=car();try{await DL.save({filename:slug(carName(c,app.cars.indexOf(c)))+"-bill-of-sale.html",data:"<!DOCTYPE html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Bill of sale</title><style>"+BOS_CSS+"</style></head><body>"+bosHTML()+"</body></html>"});toast("Saved. Open the file to print it.")}catch(e){toast("Couldn't save the file.")}});
 $("bosCopy").addEventListener("click",()=>copyText(bosText(),$("bosCopy"),"Copy text"));
@@ -2261,7 +2338,7 @@ function renderOverview(){
   const box=$("carsBox");if(!box)return;
   box.innerHTML=app.cars.map((c,i)=>{
     const shots=visible(c,c.level),done=shots.filter(s=>c.done[s.id]).length,open=repItems(c).filter(x=>!x.done).length;
-    const ask=num(c.ad.price),pr=ask?profitRange(c,c.status==="sold"&&num(c.soldPrice)?num(c.soldPrice):ask):null,days=c.status==="sale"?daysSince(c.listedOn):null;
+    const ask=adPrice(c),pr=ask?profitRange(c,c.status==="sold"&&num(c.soldPrice)?num(c.soldPrice):ask):null,days=c.status==="sale"?daysSince(c.listedOn):null;
     const offers=c.leads.map(l=>num(l.offer)).filter(Boolean),nd=nudgeFor(c),me=c.id===car().id;
     const stat=(v,l)=>'<span><b>'+esc(v)+"</b> "+esc(l)+"</span>";
     const pf=pr&&pr.known?(v=>(v<0?"−":"")+money(Math.abs(v)))((pr.lo+pr.hi)/2):null;
@@ -2274,7 +2351,7 @@ function renderOverview(){
 $("carsBox").addEventListener("click",e=>{const b=e.target.closest("[data-open]");if(!b)return;app.cur=b.dataset.open;save();setMark(false);renderCars();render();fillAd();$("setup").scrollIntoView({behavior:reduce?"auto":"smooth"})});
 
 /* ---------- quick replies ---------- */
-function replyList(c){
+function replyListPrivate(c){
   const a=c.ad,name=vehName(c)||"car",km=num(a.km)?num(a.km).toLocaleString("en-CA")+" "+(a.unit||"km"):"",price=num(a.price)?money(num(a.price)):"";
   const me=app.me||{},sign=me.name?"\n\nThanks, "+me.name:"",flaws=c.dmg.filter(m=>!m.done).map(m=>(KINDS[m.kind]||"damage").toLowerCase()+" on the "+nameOf(m,c.type));
   const acc={none:"No accidents.",minor:"One minor accident, properly repaired.",major:"It has been in an accident, and I'm happy to go over the details."}[a.acc]||"";
@@ -2392,7 +2469,7 @@ function signFacts(c){
   if(a.acc==="none")f.push("No accidents");
   return f;
 }
-function signHTML(c){
+function signHTMLPrivate(c){
   const a=c.ad,link=(c.sign.link||"").trim(),ph=(app.me.phone||"").trim();
   let qr="";if(/^https?:\/\//i.test(link)){try{qr=QR.svg(link)}catch(e){qr=""}}
   return'<div class="sign"><div class="sg-top">FOR SALE</div><div class="sg-car">'+esc([a.year,a.make,a.model,a.trim].filter(Boolean).join(" ")||"Used "+TYPES[c.type].ad)+"</div>"
@@ -2400,7 +2477,7 @@ function signHTML(c){
     +'<ul class="sg-facts">'+signFacts(c).map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul>"
     +'<div class="sg-bottom"><div class="sg-phone">'+(ph?esc(ph):"Your phone number")+"</div>"+(qr?'<div class="sg-qr">'+qr+"<span>Scan for photos</span></div>":"")+"</div></div>";
 }
-const SIGN_CSS=".sign{font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;color:#111;background:#fff;border:.35em solid #111;padding:1.1em 1.4em;display:flex;flex-direction:column;gap:.35em;box-sizing:border-box;width:100%;aspect-ratio:11/8.5}.sg-top{background:#d4261b;color:#fff;font-weight:700;font-size:3.6em;line-height:1;text-align:center;padding:.12em 0;letter-spacing:.04em}.sg-car{font-weight:700;font-size:3.6em;line-height:1.05;margin-top:.15em}.sg-price{font-weight:700;font-size:6.4em;line-height:1}.sg-facts{list-style:none;margin:.25em 0 0;padding:0;font-size:2.3em;line-height:1.25}.sg-bottom{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:1em}.sg-phone{font-weight:700;font-size:4.4em;line-height:1}.sg-qr{width:13em;text-align:center;font-size:1em;margin-top:-6em}.sg-qr svg{width:100%;height:auto;display:block}.sg-qr span{font-size:1.5em}";
+const SIGN_CSS=".sign{font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;color:#111;background:#fff;border:.35em solid #111;padding:1.1em 1.4em;display:flex;flex-direction:column;gap:.35em;box-sizing:border-box;width:100%;aspect-ratio:11/8.5}.sg-top{background:#d4261b;color:#fff;font-weight:700;font-size:3.6em;line-height:1;text-align:center;padding:.12em 0;letter-spacing:.04em}.sg-car{font-weight:700;font-size:3.6em;line-height:1.05;margin-top:.15em}.sg-price{font-weight:700;font-size:6.4em;line-height:1}.sg-facts{list-style:none;margin:.25em 0 0;padding:0;font-size:2.3em;line-height:1.25}.sg-bottom{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:1em}.sg-phone{font-weight:700;font-size:4.4em;line-height:1}.sg-qr{width:13em;text-align:center;font-size:1em;margin-top:-6em}.sg-qr svg{width:100%;height:auto;display:block}.sg-qr span{font-size:1.5em}.sg-gst{font-size:.4em}.sg-biz{font-size:1.5em;margin-top:.25em}";
 function renderSign(){
   const c=car();$("sgPhone").value=app.me.phone||"";$("sgLink").value=c.sign.link||"";
   $("signPrev").innerHTML=signHTML(c);
@@ -2421,10 +2498,10 @@ $("lpMake").addEventListener("click",async()=>{
   try{
     const imgs=[];for(const s of taken)imgs.push({src:await smallJpeg(photo(s.id).blob,1400),alt:s.name});
     const title=[a.year,a.make,a.model,a.trim].filter(Boolean).join(" ")||"Used "+TYPES[c.type].ad;
-    const rows=[["Price",num(a.price)?money(num(a.price)):""],["Odometer",num(a.km)?num(a.km).toLocaleString("en-CA")+" "+(a.unit||"km"):""],["Colour",a.colour],["Engine",a.engine],["Transmission",a.trans],["Drivetrain",a.drive],["Owners",a.owners?(a.owners==="3"?"3 or more":a.owners):""],["Accidents",{none:"None",minor:"Minor, repaired",major:"Yes, ask for details"}[a.acc]||""],["VIN",a.vin?a.vin.toUpperCase():""],["Location",a.loc]].filter(r=>r[1]);
+    const rows=[["Price",adPrice(c)?money(adPrice(c))+(isDealer()?" plus GST, all fees included":""):""],["Stock number",isDealer()?dealOf(c).stock||"":""],["Odometer",num(a.km)?num(a.km).toLocaleString("en-CA")+" "+(a.unit||"km"):""],["Colour",a.colour],["Engine",a.engine],["Transmission",a.trans],["Drivetrain",a.drive],["Owners",a.owners?(a.owners==="3"?"3 or more":a.owners):""],["Accidents",{none:"None",minor:"Minor, repaired",major:"Yes, ask for details"}[a.acc]||""],["VIN",a.vin?a.vin.toUpperCase():""],["Location",a.loc]].filter(r=>r[1]);
     const desc=($("adOut").value||"").replace(/^[^\n]*\n+/,"");
-    const ph=(app.me.phone||"").trim();
-    const html='<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title><style>body{margin:0;font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#15171a;background:#fff}header{background:#2b2e33;color:#fff;padding:22px 18px}h1{margin:0;font-size:30px;line-height:1.1}.price{font-size:26px;font-weight:700;margin-top:6px}.gal{display:flex;align-items:center;overflow-x:auto;scroll-snap-type:x mandatory;gap:8px;padding:12px 0;background:#111}.gal img{flex:0 0 92%;max-width:900px;height:auto;aspect-ratio:3/2;object-fit:cover;scroll-snap-align:center;border-radius:6px}.gal img:first-child{margin-left:4%}main{max-width:900px;margin:0 auto;padding:18px}table{border-collapse:collapse;width:100%}td{padding:8px 0;border-bottom:1px solid #e3e5e8}td:first-child{color:#596068;width:40%}.desc{white-space:pre-wrap}.call{display:inline-block;margin-top:14px;background:#d4261b;color:#fff;padding:12px 18px;border-radius:10px;font-weight:700;text-decoration:none}footer{color:#596068;font-size:13px;padding:18px;text-align:center}</style></head><body><header><h1>'+esc(title)+"</h1>"+(num(a.price)?'<div class="price">'+esc(money(num(a.price)))+"</div>":"")+'</header><div class="gal">'+imgs.map(i=>'<img src="'+i.src+'" alt="'+esc(i.alt)+'" loading="lazy">').join("")+"</div><main><p>Swipe the photos for more. "+imgs.length+" photos.</p><table>"+rows.map(r=>"<tr><td>"+esc(r[0])+"</td><td>"+esc(r[1])+"</td></tr>").join("")+"</table>"+(desc?'<h2>About this car</h2><p class="desc">'+esc(desc)+"</p>":"")+(ph?'<a class="call" href="tel:'+esc(ph.replace(/[^\d+]/g,""))+'">Call or text '+esc(ph)+"</a>":"")+"</main><footer>Private sale. Made with Car Shots.</footer></body></html>";
+    const ph=((isDealer()&&app.biz.phone)||app.me.phone||"").trim();
+    const html='<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title><style>body{margin:0;font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#15171a;background:#fff}header{background:#2b2e33;color:#fff;padding:22px 18px}h1{margin:0;font-size:30px;line-height:1.1}.price{font-size:26px;font-weight:700;margin-top:6px}.gal{display:flex;align-items:center;overflow-x:auto;scroll-snap-type:x mandatory;gap:8px;padding:12px 0;background:#111}.gal img{flex:0 0 92%;max-width:900px;height:auto;aspect-ratio:3/2;object-fit:cover;scroll-snap-align:center;border-radius:6px}.gal img:first-child{margin-left:4%}main{max-width:900px;margin:0 auto;padding:18px}table{border-collapse:collapse;width:100%}td{padding:8px 0;border-bottom:1px solid #e3e5e8}td:first-child{color:#596068;width:40%}.desc{white-space:pre-wrap}.call{display:inline-block;margin-top:14px;background:#d4261b;color:#fff;padding:12px 18px;border-radius:10px;font-weight:700;text-decoration:none}footer{color:#596068;font-size:13px;padding:18px;text-align:center}</style></head><body><header><h1>'+esc(title)+"</h1>"+(adPrice(c)?'<div class="price">'+esc(money(adPrice(c)))+(isDealer()?" + GST":"")+"</div>":"")+'</header><div class="gal">'+imgs.map(i=>'<img src="'+i.src+'" alt="'+esc(i.alt)+'" loading="lazy">').join("")+"</div><main><p>Swipe the photos for more. "+imgs.length+" photos.</p><table>"+rows.map(r=>"<tr><td>"+esc(r[0])+"</td><td>"+esc(r[1])+"</td></tr>").join("")+"</table>"+(desc?'<h2>About this car</h2><p class="desc">'+esc(desc)+"</p>":"")+(ph?'<a class="call" href="tel:'+esc(ph.replace(/[^\d+]/g,""))+'">Call or text '+esc(ph)+"</a>":"")+"</main><footer>"+(isDealer()?esc([app.biz.name,app.biz.lic?"AMVIC licensed dealer #"+app.biz.lic:"",app.biz.addr].filter(Boolean).join(" · ")):"Private sale.")+" Made with Car Shots.</footer></body></html>";
     const name=slug(title)+".html";lpFile=new File([html],name,{type:"text/html"});
     await DL.save({filename:name,data:new Blob([html],{type:"text/html"})});
     const link=siteBase()+name;
@@ -2500,7 +2577,7 @@ $("spinDone").addEventListener("click",finishSpin);
 $("spinClose").addEventListener("click",()=>{SPN.frames=[];closeSpin()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("spinView").hidden){SPN.frames=[];closeSpin()}});
 
-function fillExtras2(){renderHandover();renderUse();renderReplies();renderFr();renderComps();renderNudge();renderSign();renderSpin();renderOverview();
+function fillExtras2(){applyDealerUI();renderHandover();renderUse();renderReplies();renderFr();renderComps();renderNudge();renderSign();renderSpin();renderOverview();
   const c=car();$("listedOn").value=c.listedOn||"";$("adFrBtn").hidden=false}
 
 $("signCss").textContent=SIGN_CSS;
@@ -2520,21 +2597,23 @@ function renderUse(){
 }
 
 /* ---------- what's next ---------- */
-const SECNAME={setup:"Setup",shots:"Shots",repairs:"Repairs",ad:"Ad writer",post:"Post it",buyers:"Buyers",handover:"Handover"};
+const SECNAME={deal:"Dealer file",setup:"Setup",shots:"Shots",repairs:"Repairs",ad:"Ad writer",post:"Post it",buyers:"Buyers",handover:"Handover"};
 const photoCount=c=>{const v=visible(c,c.level);return{n:v.filter(s=>P[c.id+":"+s.id]).length,t:v.length}};
 const STEPS=[
   {t:"Set up the car",sec:"setup",done:c=>!!(c.ad.year&&c.ad.make&&c.ad.model),hint:c=>"Pick the vehicle type and add the year, make and model. Looking up the VIN fills them in."},
   {t:"Take the photos",sec:"shots",done:c=>{const p=photoCount(c);return p.t>0&&p.n>=Math.ceil(p.t*.8)},hint:c=>{const p=photoCount(c);return p.n+" of "+p.t+" photos taken."}},
   {t:"Sort the repairs",sec:"repairs",done:c=>!repItems(c).some(i=>!i.done&&i.pri==="fix"),hint:c=>{const n=repItems(c).filter(i=>!i.done&&i.pri==="fix").length;return n+" item"+(n===1?"":"s")+" marked fix before listing."}},
+  {t:"Complete the dealer file",sec:"deal",show:()=>isDealer(),done:c=>dealReady(c).ok,hint:c=>dealReady(c).msg},
   {t:"Finish the ad",sec:"ad",done:c=>!!(num(c.ad.price)&&num(c.ad.km)),hint:c=>"Add the asking price and kilometres so the ad is complete."},
   {t:"Post it",sec:"post",done:c=>!!c.listedOn||c.status!=="sale",hint:c=>"The posting kit has everything to copy into your listing."},
   {t:"Sell it",sec:"buyers",done:c=>c.status==="sold",hint:c=>{const o=c.leads.map(l=>num(l.offer)).filter(Boolean);return c.leads.length?c.leads.length+" buyer"+(c.leads.length===1?"":"s")+" so far"+(o.length?", best offer "+money(Math.max(...o)):"")+".":"Track buyers, offers and test drives here."}},
   {t:"Hand it over",sec:"handover",done:c=>hoDone(c)>=hoItems(c).length,hint:c=>hoDone(c)+" of "+hoItems(c).length+" handover steps done."}
 ];
 function renderNext(){
-  const c=car(),st=STEPS.map(x=>!!x.done(c)),idx=st.indexOf(false);
-  let h='<div class="nc-dots">'+STEPS.map((x,i)=>'<a class="nd'+(st[i]?" ok":"")+(i===idx?" now":"")+'" href="#'+x.sec+'" aria-label="Step '+(i+1)+": "+x.t+(st[i]?", done":"")+'">'+(st[i]?"✓":i+1)+"</a>").join("")+"</div>";
-  h+=idx<0?"<p><b>All done for this car.</b>Every step is ticked, from setup to handover.</p>":"<p><b>Step "+(idx+1)+" of "+STEPS.length+": "+STEPS[idx].t+"</b>"+esc(STEPS[idx].hint(c))+'</p><a class="act" href="#'+STEPS[idx].sec+'">Go to '+SECNAME[STEPS[idx].sec]+"</a>";
+  const SS=STEPS.filter(x=>!x.show||x.show());
+  const c=car(),st=SS.map(x=>!!x.done(c)),idx=st.indexOf(false);
+  let h='<div class="nc-dots">'+SS.map((x,i)=>'<a class="nd'+(st[i]?" ok":"")+(i===idx?" now":"")+'" href="#'+x.sec+'" aria-label="Step '+(i+1)+": "+x.t+(st[i]?", done":"")+'">'+(st[i]?"✓":i+1)+"</a>").join("")+"</div>";
+  h+=idx<0?"<p><b>All done for this car.</b>Every step is ticked, from setup to handover.</p>":"<p><b>Step "+(idx+1)+" of "+SS.length+": "+SS[idx].t+"</b>"+esc(SS[idx].hint(c))+'</p><a class="act" href="#'+SS[idx].sec+'">Go to '+SECNAME[SS[idx].sec]+"</a>";
   const anyPhotos=Object.keys(P).some(k=>!k.endsWith(":video")),bd=app.lastBackup?daysSince(app.lastBackup):null;
   if(anyPhotos&&(bd==null||bd>=7))h+='<p class="nc-warn" style="margin:12px 0 0">'+(bd==null?"You haven't saved a backup yet.":"Last backup was "+bd+" days ago.")+' Everything lives only on this phone. <a href="#backup">Back up now</a></p>';
   $("nextCard").innerHTML=h;
@@ -2546,7 +2625,7 @@ let POSTF=[];
 function renderPost(){
   const c=car(),a=c.ad,txt=($("adOut").value||"").trim(),lines=txt.split(/\n/),title=(lines[0]||"").trim(),desc=lines.slice(1).join("\n").trim();
   $("postSites").innerHTML=Object.entries(SITE_HOME).sort((x,y)=>(y[0]===c.site)-(x[0]===c.site)).map(([k,v])=>'<a class="chip" href="'+v[1]+'" target="_blank" rel="noopener">Open '+v[0]+"</a>").join("");
-  POSTF=[["Title",title],["Price",num(a.price)?String(num(a.price)):""],["Kilometres",num(a.km)?String(num(a.km)):""],["Description",desc],["VIN",(a.vin||"").toUpperCase()],["French description",a.fr?a.fr.split(/\n/).slice(1).join("\n").trim():""]].filter(f=>f[1]);
+  POSTF=[["Title",title],["Price"+(isDealer()?" (all-in, before GST)":""),adPrice(c)?String(adPrice(c)):""],["Dealer licence",isDealer()&&app.biz.lic?"AMVIC licence "+app.biz.lic:""],["Stock number",isDealer()?dealOf(c).stock||"":""],["Kilometres",num(a.km)?String(num(a.km)):""],["Description",desc],["VIN",(a.vin||"").toUpperCase()],["French description",a.fr?a.fr.split(/\n/).slice(1).join("\n").trim():""]].filter(f=>f[1]);
   let h=POSTF.map((f,i)=>'<div class="pk"><div class="pk-h"><b>'+f[0]+'</b><button class="act sec" type="button" data-pk="'+i+'">Copy</button></div><div class="pk-v">'+esc(f[1])+"</div></div>").join("");
   if(!txt)h='<div class="empty">Write your ad first in the Ad writer; the pieces show up here.</div>';
   const{keep,site}=postingSet(),sn=(SITE_HOME[c.site]||["your site"])[0];
@@ -2564,7 +2643,7 @@ $("postKit").addEventListener("click",e=>{
 $("postListed").addEventListener("click",()=>{const c=car();c.listedOn=todayISO();touch();$("listedOn").value=c.listedOn;renderPost();renderNext();renderNudge();renderOverview();toast("Marked as listed today. You'll get a price check if it sits for 10 days.")});
 
 /* ---------- sale-day handover ---------- */
-function hoItems(c){
+function hoItemsPrivate(c){
   const a=[["before","Remove everything personal: glovebox, console, trunk, under the seats and sun visors."],["before","Unpair your phone and clear saved addresses, contacts and home location from the screen."],["before","Clear the garage-door buttons and take out toll, parking or gate passes."],["before","Remove the car from the maker's app or any connected service you signed up for."],["before","Gather every key and fob"+(c.feats.includes("remote")?", including the remote start fob":"")+", plus the owner's manual"+(c.feats.includes("records")?" and service records":"")+"."]];
   if(c.feats.includes("tires2"))a.push(["before","Have the second set of tires ready to load."]);
   a.push(["sale","Confirm the payment yourself: cash counted, or the money showing in your own bank account."],["sale","Both sign the bill of sale, and each keep a copy."],["sale","Sign over the ownership or registration the way your province or state requires."],["sale","Check whether your licence plates stay with you or the car, and take them off if they're yours."],["sale","Write down the odometer reading and the time of sale."]);
@@ -2579,6 +2658,214 @@ function renderHandover(){
 }
 $("hoList").addEventListener("change",e=>{const k=e.target.dataset.ho;if(!k)return;const c=car();if(e.target.checked)c.hand[k]=1;else delete c.hand[k];touch();e.target.closest(".hoi").classList.toggle("on",e.target.checked);$("hoSum").textContent=hoDone(c)+" of "+hoItems(c).length+" done. Tick each one as you go on sale day.";renderNext()});
 armBtn($("hoReset"),"Untick all",()=>{car().hand={};touch();renderHandover();renderNext()});
+
+/* ---------- Alberta dealer mode ---------- */
+app.biz=app.biz&&typeof app.biz==="object"?app.biz:{};
+const isDealer=()=>!!app.biz.on;
+const dealOf=c=>{c.deal=c.deal&&typeof c.deal==="object"?c.deal:{};c.deal.fees=Array.isArray(c.deal.fees)?c.deal.fees.filter(k=>k&&k.id):[];c.deal.disc=c.deal.disc&&typeof c.deal.disc==="object"?c.deal.disc:{};c.deal.discNote=c.deal.discNote&&typeof c.deal.discNote==="object"?c.deal.discNote:{};return c.deal};
+const feesOf=c=>dealOf(c).fees.reduce((s,k)=>s+num(k.amt),0);
+const allInOf=c=>num(c.ad.price)?num(c.ad.price)+feesOf(c):0;
+const adPrice=c=>isDealer()?allInOf(c):num(c.ad.price);
+const DISC=[["a","Bought back by the manufacturer through CAMVAP"],["b","Damaged by fire"],["c","Damaged by flood"],["d","Used as a police car or emergency vehicle (fire, ambulance)"],["e","Used as a taxi or limousine"],["f","Used as a rental vehicle"],["g","Declared salvage or written off, non-repairable, or reported unsafe by a certified technician"],["h","In a collision or incident needing more than $3,000 in repairs (parts and labour)"],["i","Registered outside Alberta, in another province or country, right before you got it"]];
+const DISC_AD={a:"was bought back by the manufacturer (CAMVAP)",b:"has had fire damage",c:"has had flood damage",d:"was used as a police or emergency vehicle",e:"was used as a taxi or limousine",f:"was used as a rental vehicle",g:"has a salvage, non-repairable or unsafe declaration on record",h:"has had collision repairs over $3,000",i:"was registered outside Alberta before we got it"};
+function mfaState(c,onDate){
+  const d=dealOf(c).mfaDate;if(!d)return{ok:false,msg:"Not done yet. Required before the sale."};
+  const t=new Date(d+"T12:00:00"),exp=new Date(t.getTime()+120*864e5),ref=onDate?new Date(onDate+"T12:00:00"):new Date();
+  const left=Math.floor((exp-ref)/864e5),f=x=>x.toLocaleDateString("en-CA",{year:"numeric",month:"short",day:"numeric"});
+  return left<0?{ok:false,msg:"Expired "+f(exp)+". Get a new one before the sale."}:{ok:true,msg:"Valid until "+f(exp)+" ("+left+" day"+(left===1?"":"s")+" left)."};
+}
+function dealReady(c){
+  const d=dealOf(c),miss=[];
+  if(!mfaState(c).ok)miss.push("mechanical fitness assessment");
+  const un=DISC.filter(x=>!d.disc[x[0]]).length;if(un)miss.push(un+" history question"+(un===1?"":"s"));
+  if(!d.lienDate)miss.push("lien search");
+  if(!num(c.ad.price))miss.push("vehicle price");
+  return{ok:!miss.length,msg:miss.length?"Still needed: "+miss.join(", ")+".":"Dealer file complete."};
+}
+function applyDealerUI(){
+  const on=isDealer();
+  $("bizOn").checked=on;$("bizBox").hidden=!on;
+  document.querySelectorAll("#bizBox [data-z]").forEach(el=>{el.value=app.biz[el.dataset.z]||""});
+  $("deal").hidden=!on;$("navDeal").hidden=!on;
+  $("bosDealer").hidden=!on;
+  ["bos-seller","bos-sellerAddr","bos-asis"].forEach(id=>{const el=$(id);if(el){const box=el.closest(".fl,.chk");if(box)box.hidden=on}});
+  $("bosHead").textContent=on?"Comprehensive bill of sale":"Bill of sale";
+  $("bosNote").textContent=on?"Alberta requires automotive businesses to use a comprehensive bill of sale. This fills in your business, the buyer, every fee, GST and the history disclosure, and prints the disclosure as an addendum for the buyer to sign.":"Fills in from this car's details. Some provinces and states have their own official form or extra steps, like a lien search or a safety certificate, so check your local rules before you sign.";
+  const pl=document.querySelector('label[for="ad-price"]');if(pl)pl.textContent=on?"Vehicle price before fees ($)":"Asking price ($)";
+  const rs=$("ad-reason");if(rs){const box=rs.closest(".fl");if(box)box.hidden=on}
+  if(on)renderDeal();
+}
+$("bizOn").addEventListener("change",e=>{app.biz.on=e.target.checked;save();applyDealerUI();render();updateAd();fillBos();renderHandover();renderProfitTable();renderSign();toast(app.biz.on?"Dealer mode on. Fill in your business details.":"Dealer mode off.")});
+$("bizBox").addEventListener("input",e=>{const k=e.target.dataset.z;if(!k)return;app.biz[k]=e.target.value;save();updateAd();bosMissing()});
+
+function renderDeal(){
+  const c=car(),d=dealOf(c);
+  document.querySelectorAll("#deal [data-dl]").forEach(el=>{el.value=d[el.dataset.dl]||""});
+  $("feeList").innerHTML=d.fees.map(k=>'<div class="costrow feerow" data-fid="'+k.id+'"><input aria-label="Fee" data-f2="text" value="'+esc(k.text||"")+'" placeholder="Fee name" autocomplete="off"><input aria-label="Amount in dollars" data-f2="amt" value="'+esc(k.amt||"")+'" placeholder="$" inputmode="numeric" autocomplete="off"><button class="rrm" type="button" data-rmf="'+k.id+'">Remove</button></div>').join("")||'<p class="note">No fees added. If you charge any, add them here so they are in the advertised price.</p>';
+  $("discList").innerHTML=DISC.map(([k,q])=>'<div class="disc"><label for="dq-'+k+'">'+esc(q)+'</label><div class="pair2" style="margin:4px 0 0"><select id="dq-'+k+'" data-dq="'+k+'"><option value="">Not answered</option><option value="no"'+(d.disc[k]==="no"?" selected":"")+'>No</option><option value="yes"'+(d.disc[k]==="yes"?" selected":"")+'>Yes</option></select><span></span></div>'+(d.disc[k]==="yes"?'<input aria-label="Details" data-dn="'+k+'" value="'+esc(d.discNote[k]||"")+'" placeholder="Details for the buyer" autocomplete="off" style="margin-top:6px">':"")+"</div>").join("");
+  dealStatus();
+}
+function dealStatus(){
+  const c=car(),d=dealOf(c),ai=allInOf(c),fees=feesOf(c);
+  $("allIn").innerHTML=num(c.ad.price)?"<b>"+esc(money(ai))+"</b> all-in, plus GST"+(fees?" (vehicle "+esc(money(num(c.ad.price)))+" + fees "+esc(money(fees))+")":"")+". This is the price your ads show.":"Set the vehicle price in the ad writer to see the all-in price.";
+  $("mfaStat").textContent=mfaState(c).msg+" An MFA is valid for 120 days and must be done by a licensed journeyman technician.";
+  const r=dealReady(c);$("dealStat").textContent=r.msg;$("dealStat").className="dealstat"+(r.ok?" ok":"");
+}
+$("deal").addEventListener("input",e=>{
+  const c=car(),d=dealOf(c);
+  if(e.target.dataset.dl){d[e.target.dataset.dl]=e.target.value;touch();dealStatus();updateAd();return}
+  if(e.target.dataset.dn){d.discNote[e.target.dataset.dn]=e.target.value;touch();updateAd();return}
+  if(e.target.dataset.f2){const row=e.target.closest("[data-fid]"),k=d.fees.find(x=>x.id===row.dataset.fid);if(k){k[e.target.dataset.f2]=e.target.value;touch();dealStatus();updateAd();renderProfitTable()}}
+});
+$("deal").addEventListener("change",e=>{
+  const c=car(),d=dealOf(c);
+  if(e.target.dataset.dq){d.disc[e.target.dataset.dq]=e.target.value;touch();setTimeout(()=>{renderDeal();updateAd();renderNext()},0);return}
+  if(e.target.dataset.dl){d[e.target.dataset.dl]=e.target.value;touch();dealStatus();renderNext()}
+});
+$("deal").addEventListener("click",e=>{
+  const c=car(),d=dealOf(c);
+  const p=e.target.closest("[data-fee]");if(p){const k={id:uid(),text:p.dataset.fee,amt:""};d.fees.push(k);touch();renderDeal();const el=document.querySelector('[data-fid="'+k.id+'"] [data-f2='+(k.text?"amt":"text")+"]");if(el)el.focus();return}
+  const r=e.target.closest("[data-rmf]");if(r){d.fees=d.fees.filter(k=>k.id!==r.dataset.rmf);touch();renderDeal();updateAd();renderProfitTable()}
+});
+function discHTML(c){
+  const d=dealOf(c),a=c.ad,e=esc;
+  return'<div class="bos"><h1>Vehicle History Disclosure</h1><p>Addendum to the bill of sale. Automotive Business Regulation (Alberta), section 31.1.</p>'
+    +"<table><tr><th>Business</th><td>"+e([app.biz.name,app.biz.lic?"AMVIC licence "+app.biz.lic:""].filter(Boolean).join(", "))+"</td></tr><tr><th>Vehicle</th><td>"+e([a.year,a.make,a.model].filter(Boolean).join(" "))+"</td></tr><tr><th>VIN</th><td>"+e((a.vin||"").toUpperCase())+"</td></tr>"+(d.stock?"<tr><th>Stock number</th><td>"+e(d.stock)+"</td></tr>":"")+"</table>"
+    +"<h2>Based on what the business knows or ought to know, this vehicle:</h2><table>"+DISC.map(([k,q])=>"<tr><th>"+e(q)+"</th><td><b>"+(d.disc[k]==="yes"?"YES":d.disc[k]==="no"?"No":"&nbsp;")+"</b>"+(d.disc[k]==="yes"&&d.discNote[k]?" "+e(d.discNote[k]):"")+"</td></tr>").join("")+"</table>"
+    +"<p>The buyer confirms receiving this disclosure, that it is clear, and that the business answered their questions about it.</p>"
+    +'<div class="sig"><div><span></span>Buyer signature</div><div><span></span>Date</div><div><span></span>Business representative</div><div><span></span>Date</div></div></div>';
+}
+$("discPrint").addEventListener("click",()=>{$("printArea").innerHTML="<style>@media print{"+BOS_CSS.replace(/body\{/,"#printArea{")+"}</style>"+discHTML(car());try{window.print()}catch(e){toast("Printing isn't available here.")}});
+
+/* dealer bill of sale */
+function dealerMoney(c){
+  const b=c.bos,price=num(c.ad.price),fees=dealOf(c).fees.filter(k=>num(k.amt)),extras=num(b.extrasAmt),trade=num(b.tradeAllow),lien=num(b.tradeLien),dep=num(b.deposit);
+  const sub=price+fees.reduce((s,k)=>s+num(k.amt),0)+extras;
+  const gst=String(b.gst||"").trim()!==""?Number(String(b.gst).replace(/[^\d.]/g,""))||0:Math.round(Math.max(0,sub-trade)*5)/100;
+  const total=sub-trade+lien+gst;
+  return{price,fees,extras,sub,trade,lien,gst,total,dep,bal:total-dep,gstAuto:String(b.gst||"").trim()===""};
+}
+const cents=n=>"$"+(Math.round(n*100)/100).toLocaleString("en-CA",{minimumFractionDigits:2,maximumFractionDigits:2});
+function bosHTMLDealer(){
+  const c=car(),a=c.ad,b=c.bos,d=dealOf(c),m=dealerMoney(c),e=esc,z=app.biz;
+  const fd=s=>s?new Date(s+"T12:00:00").toLocaleDateString("en-CA",{year:"numeric",month:"long",day:"numeric"}):"";
+  const row=(k,v)=>"<tr><th>"+k+"</th><td>"+(v?e(v):"&nbsp;")+"</td></tr>",mrow=(k,v,cls)=>"<tr"+(cls?' class="'+cls+'"':"")+"><th>"+e(k)+'</th><td class="r">'+e(v)+"</td></tr>";
+  const odo=num(b.odo||a.km),mfa=d.mfaDate?"Mechanical fitness assessment completed "+fd(d.mfaDate)+(d.mfaTech?" by "+d.mfaTech:"")+"; a copy is given to the buyer.":"Mechanical fitness assessment: not recorded.";
+  const yes=DISC.filter(x=>d.disc[x[0]]==="yes");
+  return'<div class="bos"><h1>Bill of Sale (Comprehensive)</h1><p>'+e([z.name,z.addr].filter(Boolean).join(", "))+(z.lic?"<br>AMVIC licence "+e(z.lic):"")+(z.gst?"<br>GST "+e(z.gst):"")+"</p>"
+    +"<table>"+row("Date of bill of sale",fd(b.date||todayISO()))+row("Delivery date",fd(b.delivery))+"</table>"
+    +"<h2>Buyer</h2><table>"+row("Name",b.buyer)+row("Address",b.buyerAddr)+row("Government ID number",b.buyerId)+"</table>"
+    +"<h2>Business</h2><table>"+row("Business operator",z.name)+row("Business address",z.addr)+row("Licence number",z.lic)+row("Salesperson",z.sales)+row("Salesperson registration",z.salesReg)+"</table>"
+    +"<h2>Vehicle</h2><table>"+row("Year, make, model",[a.year,a.make,a.model,a.trim].filter(Boolean).join(" "))+row("Colour",a.colour)+row("Body type",d.body||TYPES[c.type].l)+row("VIN",(a.vin||"").toUpperCase())+row("Stock number",d.stock)+row("Odometer at this bill of sale",odo?odo.toLocaleString("en-CA")+" "+(a.unit||"km"):"")+"</table>"
+    +"<h2>Price and payment</h2><table>"+mrow("Vehicle price",cents(m.price))+m.fees.map(k=>mrow(k.text||"Fee",cents(num(k.amt)))).join("")+(m.extras?mrow("Extra equipment and options"+(b.extrasText?": "+b.extrasText:""),cents(m.extras)):"")+mrow("Subtotal",cents(m.sub),"t")+(m.trade?mrow("Less trade-in allowance","−"+cents(m.trade)):"")+(m.lien?mrow("Plus loan owing on the trade-in",cents(m.lien)):"")+mrow("GST",cents(m.gst))+mrow("Total vehicle cost",cents(m.total),"t")+(m.dep?mrow("Deposit or down payment received","−"+cents(m.dep)):"")+mrow("Balance owing",cents(m.bal),"t")+"</table>"
+    +"<p>Balance due: "+e(b.payTiming||"in full on delivery")+".</p>"
+    +(b.free?"<p>Included at no extra charge: "+e(b.free)+".</p>":"")
+    +"<p>"+(b.financing?"The business arranged a credit agreement for this purchase; the disclosure statement required under Part 9 of the Consumer Protection Act is attached.":"The business did not enter into or arrange a credit agreement for this purchase.")+"</p>"
+    +(b.tradeDesc||m.trade?"<h2>Trade-in</h2><table>"+row("Vehicle",b.tradeDesc)+row("VIN",(b.tradeVin||"").toUpperCase())+row("Allowance",m.trade?cents(m.trade):"")+row("Loan owing",m.lien?cents(m.lien):"")+"</table>":"")
+    +"<h2>Vehicle history</h2><p>"+e(mfa)+"</p><p>"+(yes.length?"Disclosed: this vehicle "+e(listJoin(yes.map(x=>DISC_AD[x[0]]+(d.discNote[x[0]]?" ("+d.discNote[x[0]]+")":""))))+".":"No history items to disclose under section 31.1.")+" The full disclosure is attached as an addendum and forms part of this bill of sale.</p>"
+    +"<h2>Restrictions, limitations and conditions</h2><p>"+e(b.cond||"None.")+"</p>"
+    +"<p><b>Declaration:</b> the business declares that it has disclosed the vehicle history information required under section 31.1 of the Automotive Business Regulation.</p>"
+    +'<div class="sig"><div><span></span>Business representative</div><div><span></span>Date</div><div><span></span>Buyer signature</div><div><span></span>Date</div></div></div>'
+    +'<div style="break-before:page;page-break-before:always;margin-top:40px"></div>'+discHTML(c);
+}
+function bosTextDealer(){
+  const c=car(),a=c.ad,b=c.bos,d=dealOf(c),m=dealerMoney(c),z=app.biz;
+  return["BILL OF SALE (COMPREHENSIVE)",[z.name,z.addr].filter(Boolean).join(", "),z.lic?"AMVIC licence "+z.lic:"","Date: "+(b.date||todayISO())+"   Delivery: "+(b.delivery||""),"","BUYER: "+(b.buyer||"")+", "+(b.buyerAddr||"")+", ID "+(b.buyerId||""),"SALESPERSON: "+[z.sales,z.salesReg].filter(Boolean).join(", "),"","VEHICLE: "+[a.year,a.make,a.model,a.trim].filter(Boolean).join(" ")+", "+(a.colour||"")+", "+(d.body||TYPES[c.type].l),"VIN: "+(a.vin||"").toUpperCase()+(d.stock?"   Stock: "+d.stock:""),"Odometer: "+(num(b.odo||a.km)?num(b.odo||a.km).toLocaleString("en-CA")+" "+(a.unit||"km"):""),"","Vehicle price: "+cents(m.price)].concat(m.fees.map(k=>(k.text||"Fee")+": "+cents(num(k.amt)))).concat([m.extras?"Extras: "+cents(m.extras):"","Subtotal: "+cents(m.sub),m.trade?"Trade-in allowance: −"+cents(m.trade):"",m.lien?"Loan owing on trade-in: "+cents(m.lien):"","GST: "+cents(m.gst),"Total vehicle cost: "+cents(m.total),m.dep?"Deposit: −"+cents(m.dep):"","Balance owing: "+cents(m.bal),"","MFA: "+(d.mfaDate||"not recorded")+(d.mfaTech?" by "+d.mfaTech:""),"History disclosure under s. 31.1 attached.","Conditions: "+(b.cond||"None.")]).filter(x=>x!=="").join("\n");
+}
+function bosMissingDealer(){
+  const c=car(),a=c.ad,b=c.bos,z=app.biz,miss=[];
+  if(!z.name)miss.push("business name");if(!z.addr)miss.push("business address");if(!z.lic)miss.push("AMVIC licence number");
+  if(!b.buyer)miss.push("buyer's name");if(!b.buyerAddr)miss.push("buyer's address");if(!b.buyerId)miss.push("buyer's ID number");
+  if(!a.vin)miss.push("VIN");if(!(a.year&&a.make&&a.model))miss.push("year, make and model");if(!a.colour)miss.push("colour");if(!num(a.price))miss.push("vehicle price");if(!b.delivery)miss.push("delivery date");
+  const ms=mfaState(c,b.delivery||null);if(!ms.ok)miss.push("valid mechanical fitness assessment");
+  const un=DISC.filter(x=>!dealOf(c).disc[x[0]]).length;if(un)miss.push(un+" history disclosure answer"+(un===1?"":"s"));
+  $("bosMissing").textContent=miss.length?"Still missing: "+miss.join(", ")+".":"Everything Alberta lists for a comprehensive bill of sale is filled in.";
+  const m=dealerMoney(c);
+  $("bosSum").innerHTML="Total vehicle cost <b>"+esc(cents(m.total))+"</b> including GST of "+esc(cents(m.gst))+(m.gstAuto?" (5% after the trade-in; enter your own if it differs)":"")+". Balance owing <b>"+esc(cents(m.bal))+"</b>.";
+}
+
+/* dealer ads, replies and sign */
+function buildAdDealer(c){
+  const a=c.ad,d=dealOf(c),z=app.biz,t=k=>String(a[k]||"").trim(),T=TYPES[c.type];
+  const name=[t("year"),t("make"),t("model"),t("trim")].filter(Boolean).join(" ")||("Used "+T.ad);
+  const kmN=num(a.km),km=kmN?kmN.toLocaleString("en-CA")+" "+(a.unit||"km"):"",ai=allInOf(c),price=ai?money(ai):"";
+  const out=[],spec=[t("colour"),t("engine"),t("trans").toLowerCase(),t("drive")].filter(Boolean);
+  let p1=name+(km?" with "+km:"")+".";if(spec.length)p1+=" "+cap1(spec.join(", "))+".";out.push(p1);
+  const ex=c.feats.map(f=>FEAT_AD[f]).filter(Boolean);if(ex.length)out.push("Comes with "+listJoin(ex)+".");
+  const cs=[];
+  if(a.acc==="none")cs.push("No accidents reported.");else if(a.acc==="minor")cs.push("One minor accident, properly repaired.");else if(a.acc==="major")cs.push("It has accident history; ask us for the details.");
+  const yes=DISC.filter(x=>d.disc[x[0]]==="yes");
+  if(yes.length)cs.push("Vehicle history: this vehicle "+listJoin(yes.map(x=>DISC_AD[x[0]]+(d.discNote[x[0]]?" ("+d.discNote[x[0]]+")":"")))+".");
+  const openD=c.dmg.filter(m=>!m.done);if(openD.length)cs.push("Known cosmetic flaws, shown in the photos: "+listJoin(openD.map(m=>(KINDS[m.kind]||"damage").toLowerCase()+" on the "+nameOf(m,c.type)))+".");
+  if(mfaState(c).ok)cs.push("Mechanical fitness assessment completed.");
+  if(cs.length)out.push(cs.join(" "));
+  if(a.owners)out.push(a.owners==="1"?"One previous owner.":a.owners==="2"?"Two previous owners.":"Three or more previous owners.");
+  const idl=[t("vin")?"VIN "+t("vin").toUpperCase():"",d.stock?"Stock #"+d.stock:""].filter(Boolean);if(idl.length)out.push(idl.join(", ")+".");
+  if(t("notes"))out.push(t("notes"));
+  out.push([price?"All-in price "+price+" plus GST. Every fee is included.":"",z.name?"Offered by "+z.name+(z.lic?", AMVIC licensed dealer #"+z.lic:"")+".":"",z.addr?"Visit us at "+z.addr+".":"",z.phone?"Call or text "+z.phone+" to book a test drive.":"Message us to book a test drive."].filter(Boolean).join(" "));
+  return[name,km,price?price+" + GST":""].filter(Boolean).join(" | ")+"\n\n"+out.join("\n\n");
+}
+function replyListDealer(c){
+  const a=c.ad,z=app.biz,me=app.me||{},name=vehName(c)||"vehicle",km=num(a.km)?num(a.km).toLocaleString("en-CA")+" "+(a.unit||"km"):"",ai=allInOf(c),price=ai?money(ai):"";
+  const sign=(z.sales?"\n\n"+z.sales:"")+(z.name?(z.sales?", ":"\n\n")+z.name:""),d=dealOf(c);
+  const yes=DISC.filter(x=>d.disc[x[0]]==="yes").map(x=>DISC_AD[x[0]]),flaws=c.dmg.filter(m=>!m.done).map(m=>(KINDS[m.kind]||"damage").toLowerCase()+" on the "+nameOf(m,c.type));
+  const acc={none:"No accidents reported.",minor:"One minor accident, properly repaired.",major:"It has accident history, and we'll walk you through the details."}[a.acc]||"";
+  return[
+    ["Is it still available?",c.status==="sold"?"Sorry, this one has sold. Let us know what you're looking for and we'll keep an eye out."+sign:"Hi! Yes, the "+name+" is still available"+(z.name?" at "+z.name:"")+"."+(km?" It has "+km:"")+(price?(km?" and the":" The")+" all-in price is "+price+" plus GST":"")+(km||price?".":"")+" When would you like to come see it?"+sign],
+    ["What's your best price?","The all-in price is "+(price||"listed in the ad")+" plus GST, and that includes every fee. Come see it in person and we can talk."+sign],
+    ["When can I see it?","We're at "+(z.addr||"our lot")+". "+((me.when||"").trim()?"We're open "+me.when.trim()+". ":"")+"What day works for you? Please bring your driver's licence and proof of insurance for a test drive."+sign],
+    ["Any accidents or problems?",[acc,yes.length?"From its history: it "+listJoin(yes)+".":"",flaws.length?"Cosmetic flaws: "+listJoin(flaws)+", shown in the photos.":"","We'll go over the full history disclosure and the mechanical fitness assessment with you before you buy."].filter(Boolean).join(" ")+sign],
+    ["Can you send the VIN?",a.vin?"Sure, the VIN is "+a.vin.toUpperCase()+".":"Sure, we'll send it to you shortly."],
+    ["Does it come with winter tires?",c.feats.includes("tires2")?"Yes, it comes with a second set of tires.":"No, just the set that's on it."],
+    ["Can you hold it for me?","We can hold it with a deposit under a written deposit agreement that spells out the terms, including whether it's refundable."+sign],
+    ["Do you take trades?","We do look at trades. Send us the year, make, model, kilometres and a few photos and we'll take a look."+sign],
+    ["(After it sells)","Thanks for your interest! This one has sold."+sign]
+  ];
+}
+function signHTMLDealer(c){
+  const a=c.ad,z=app.biz,link=(c.sign.link||"").trim(),ph=(z.phone||app.me.phone||"").trim(),ai=allInOf(c),d=dealOf(c);
+  let qr="";if(/^https?:\/\//i.test(link)){try{qr=QR.svg(link)}catch(e){qr=""}}
+  return'<div class="sign"><div class="sg-top">FOR SALE</div><div class="sg-car">'+esc([a.year,a.make,a.model,a.trim].filter(Boolean).join(" ")||"Used "+TYPES[c.type].ad)+"</div>"
+    +(ai?'<div class="sg-price">'+esc(money(ai))+'<span class="sg-gst"> + GST</span></div>':"")
+    +'<ul class="sg-facts">'+signFacts(c).map(x=>"<li>"+esc(x)+"</li>").join("")+(d.stock?"<li>Stock #"+esc(d.stock)+"</li>":"")+"</ul>"
+    +'<div class="sg-bottom"><div><div class="sg-phone">'+(ph?esc(ph):"Your phone number")+'</div><div class="sg-biz">'+esc([z.name,z.lic?"AMVIC licensed dealer #"+z.lic:""].filter(Boolean).join(" · "))+"</div></div>"+(qr?'<div class="sg-qr">'+qr+"<span>Scan for photos</span></div>":"")+"</div></div>";
+}
+
+/* dealer handover */
+function hoItemsDealer(c){
+  const a=[
+    ["before","Advertised price is all-in: every fee you'll charge is included, with only GST added."],
+    ["before","Business name and AMVIC licence number appear on every ad."],
+    ["before","Mechanical fitness assessment by a licensed journeyman technician, within 120 days."],
+    ["before","Vehicle history disclosure (section 31.1) answered from what you know or should know."],
+    ["before","Lien search done, with a payout plan for any lien found."],
+    ["before","Previous owner's data cleared: phone pairings, saved addresses, garage-door codes."],
+    ["sale","Comprehensive bill of sale with the buyer's government ID number, every fee, GST and the delivery date."],
+    ["sale","Buyer signs the history disclosure addendum and gets copies of it and the MFA."],
+    ["sale","Written deposit agreement if you took a deposit."],
+    ["sale","Credit agreement disclosure statement attached if you arranged financing."],
+    ["sale","Payment confirmed in your account before the keys go."],
+    ["sale","Buyer has insurance and their own plate before driving away."],
+    ["sale","Every key, fob, manual and service record handed over."+(c.feats.includes("tires2")?" Second set of tires loaded.":"")],
+    ["after","Any outstanding lien on the vehicle removed within 7 days."],
+    ["after","All advertising for the vehicle taken down within 14 days."],
+    ["after","Deal file kept: bill of sale, MFA, disclosure, deposit and credit documents."],
+    ["after","Car marked Sold in Buyers with the final price."]
+  ];
+  return a.map(x=>({id:"d-"+slug(x[1]).slice(0,40),g:x[0],t:x[1]}));
+}
+
+function buildAd(c){return isDealer()?buildAdDealer(c):buildAdPrivate(c)}
+function replyList(c){return isDealer()?replyListDealer(c):replyListPrivate(c)}
+function signHTML(c){return isDealer()?signHTMLDealer(c):signHTMLPrivate(c)}
+function bosHTML(){return isDealer()?bosHTMLDealer():bosHTMLPrivate()}
+function bosText(){return isDealer()?bosTextDealer():bosTextPrivate()}
+function bosMissing(){return isDealer()?bosMissingDealer():bosMissingPrivate()}
+function hoItems(c){return isDealer()?hoItemsDealer(c):hoItemsPrivate(c)}
+function askList(c){const q=askListPrivate(c);return isDealer()?q.filter(x=>!/Why are you selling|paid off/.test(x)):q}
+
+$("bosDealer").addEventListener("input",e=>{const k=e.target.dataset.b;if(!k)return;car().bos[k]=e.target.type==="checkbox"?e.target.checked:e.target.value;touch();bosMissing()});
+$("bosDealer").addEventListener("change",e=>{const k=e.target.dataset.b;if(!k)return;car().bos[k]=e.target.type==="checkbox"?e.target.checked:e.target.value;touch();bosMissing()});
 
 /* ---------- start ---------- */
 renderCars();
