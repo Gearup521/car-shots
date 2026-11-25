@@ -206,6 +206,28 @@ input[type=checkbox]{width:22px;height:22px;min-height:0;padding:0;margin:2px 0 
 .rrm{background:none;border:0;color:var(--mute);font-size:14px;text-decoration:underline;cursor:pointer;padding:6px 0;min-height:36px}
 .repsum{margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--soft);font-size:15px}
 .repsum b{font-family:"Barlow Condensed",Barlow,sans-serif;font-size:22px;display:block;line-height:1.1;margin-bottom:2px}
+.h3{font-family:"Barlow Condensed",Barlow,sans-serif;font-weight:700;font-size:22px;line-height:1.1;margin:0 0 8px}
+.btnlabel{display:inline-flex;align-items:center}
+.recprompt{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(90%,560px);text-align:center;font:700 clamp(22px,5vw,34px)/1.15 "Barlow Condensed",sans-serif;background:rgba(0,0,0,.55);padding:14px 18px;border-radius:14px;text-wrap:balance}
+.shutter.rec{background:var(--pin)!important}
+.shutter.rec.on{border-radius:18px!important;width:64px;height:64px;min-height:64px!important}
+.vinframe{position:absolute;left:8%;right:8%;top:42%;height:16%;border:3px solid rgba(255,255,255,.9);border-radius:10px;box-shadow:0 0 0 2000px rgba(0,0,0,.35);pointer-events:none}
+.vinrow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px}
+.vprev{width:100%;max-height:60svh;border-radius:12px;background:#000;margin-top:14px;display:block}
+.costrow{display:grid;grid-template-columns:minmax(0,1fr) 7em auto;gap:8px;align-items:center;margin-top:8px}
+.ptab{width:100%;border-collapse:collapse;margin-top:14px;font-size:15px}
+.ptab td{padding:9px 0;border-bottom:1px solid var(--line)}
+.ptab td.amt{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;padding-left:12px}
+.ptab tr.tot td{font-weight:700;border-bottom:2px solid var(--ink)}
+.ptab tr.pos td.amt{color:light-dark(#1d7a3d,#5fd38a);font-weight:700}
+.ptab tr.neg td.amt{color:var(--red);font-weight:700}
+.ba{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.bat{position:relative;width:120px;border:0;padding:0;background:none;cursor:pointer;text-align:left}
+.bat img{width:120px;height:80px;object-fit:cover;border-radius:8px;display:block}
+.bat span{display:block;font-size:14px;font-weight:600;margin-top:3px}
+#printArea{display:none}
+@media print{body>*:not(#printArea){display:none!important}#printArea{display:block!important}}
+@media(max-width:600px){.vinrow{grid-template-columns:minmax(0,1fr) auto}.vinrow input{grid-column:1/-1}.costrow{grid-template-columns:minmax(0,1fr) 6em}.costrow .rrm{grid-column:1/-1;justify-self:start}}
 .pkfig{margin:12px auto 8px;border-radius:12px;overflow:hidden;background:var(--soft);aspect-ratio:3/2;max-height:230px}
 .pkbtns{display:grid;gap:8px;margin-top:16px}
 .pkbtns .act{min-height:48px}
@@ -280,7 +302,7 @@ input[type=checkbox]{width:22px;height:22px;min-height:0;padding:0;margin:2px 0 
   </aside>
 
   <main class="right">
-    <nav class="jump" aria-label="Sections"><a href="#setup">Car</a><a href="#shots">Shots</a><a href="#photos">Photos</a><a href="#repairs">Repairs</a><a href="#ad">Ad</a></nav>
+    <nav class="jump" aria-label="Sections"><a href="#setup">Car</a><a href="#shots">Shots</a><a href="#photos">Photos</a><a href="#video">Video</a><a href="#repairs">Repairs</a><a href="#ad">Ad</a><a href="#buyers">Buyers</a><a href="#profit">Profit</a><a href="#bos">Bill of sale</a><a href="#backup">Backup</a></nav>
 
     <section class="setup" id="setup">
       <div>
@@ -370,6 +392,14 @@ input[type=checkbox]{width:22px;height:22px;min-height:0;padding:0;margin:2px 0 
       <div class="row" id="zipRow" hidden><button class="act" type="button" id="shareBtn" hidden>Share photos</button><button class="act sec" type="button" id="zipBtn">Save as one zip file</button><span class="note" id="zipMsg"></span></div>
     </section>
 
+    <section id="video">
+      <h2>Walk-around video</h2>
+      <p class="note">A guided one-minute video. On-screen prompts tell you where to walk and what to open. Many listing sites let you add a video next to your photos.</p>
+      <label class="chk" style="margin-top:6px"><input type="checkbox" id="recSound"> Record sound (wind and traffic can be loud)</label>
+      <div class="row"><button class="act" type="button" id="recOpen">Record walk-around</button><span class="note" id="recMsg"></span></div>
+      <div id="vidBox"></div>
+    </section>
+
     <section id="repairs">
       <h2>Repair notes</h2>
       <p class="note">Just for you, not in the ad. Each damage mark gets a suggested fix. Adjust it, add a price, and tick it off when it's done; fixed items drop out of the ad and the shot list.</p>
@@ -403,22 +433,95 @@ input[type=checkbox]{width:22px;height:22px;min-height:0;padding:0;margin:2px 0 
         <div class="fl"><label for="ad-price">Asking price ($)</label><input id="ad-price" data-k="price" inputmode="numeric" autocomplete="off"></div>
         <div class="fl"><label for="ad-colour">Colour</label><input id="ad-colour" data-k="colour" autocomplete="off"></div>
         <div class="fl"><label for="ad-trans">Transmission</label><select id="ad-trans" data-k="trans"><option value="">Not set</option><option>Automatic</option><option>Manual</option></select></div>
+        <div class="fl"><label for="ad-engine">Engine</label><input id="ad-engine" data-k="engine" autocomplete="off" placeholder="2.4L 4-cylinder"></div>
         <div class="fl"><label for="ad-drive">Drivetrain</label><select id="ad-drive" data-k="drive"><option value="">Not set</option><option>FWD</option><option>RWD</option><option>AWD</option><option>4x4</option></select></div>
         <div class="fl"><label for="ad-owners">Owners</label><select id="ad-owners" data-k="owners"><option value="">Not set</option><option value="1">1</option><option value="2">2</option><option value="3">3 or more</option></select></div>
         <div class="fl"><label for="ad-acc">Accident history</label><select id="ad-acc" data-k="acc"><option value="">Not set</option><option value="none">No accidents</option><option value="minor">Minor, repaired</option><option value="major">Accident, details on request</option></select></div>
         <div class="fl"><label for="ad-title">Loan or title</label><select id="ad-title" data-k="title"><option value="">Not set</option><option value="paid">Paid off, no liens</option><option value="clean">Clean title</option><option value="financed">Still financed</option></select></div>
         <div class="fl full"><label for="ad-reason">Reason for selling</label><input id="ad-reason" data-k="reason" autocomplete="off"></div>
         <div class="fl"><label for="ad-loc">Town or area</label><input id="ad-loc" data-k="loc" autocomplete="off"></div>
-        <div class="fl"><label for="ad-vin">VIN (optional)</label><input id="ad-vin" data-k="vin" autocomplete="off" spellcheck="false"></div>
+        <div class="fl full"><label for="ad-vin">VIN</label><div class="vinrow"><input id="ad-vin" data-k="vin" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="17 characters"><button class="act sec" type="button" id="vinScan">Scan barcode</button><button class="act sec" type="button" id="vinLook">Look up</button></div><p class="note" id="vinMsg" style="margin-top:6px">Scan or type the VIN and tap Look up to fill in the year, make, model and more.</p></div>
         <div class="fl full"><label for="ad-notes">Anything else</label><textarea id="ad-notes" data-k="notes" rows="2"></textarea></div>
       </div>
       <textarea id="adOut" aria-label="Your ad" rows="14"></textarea>
       <div class="row">
         <button class="act" type="button" id="adCopy">Copy ad</button>
+        <button class="act sec" type="button" id="adClaude" hidden>Write with Claude</button>
         <button class="act sec" type="button" id="adReset" hidden>Rebuild from details</button>
         <span class="note" id="adMsg"></span>
       </div>
+      <p class="note" id="adClaudeNote" hidden style="margin-top:8px">Write with Claude uses the API key from Claude damage scan in the Repairs section.</p>
       <div class="ask"><h3>Buyers will ask</h3><ul id="askList"></ul></div>
+    </section>
+
+    <section id="buyers">
+      <h2>Buyers</h2>
+      <div class="fgrid">
+        <div class="fl"><label for="carStatus">This car is</label><select id="carStatus"><option value="sale">For sale</option><option value="pending">Deal pending</option><option value="sold">Sold</option></select></div>
+        <div class="fl" id="soldPriceBox"><label for="soldPrice">Sold for ($)</label><input id="soldPrice" inputmode="numeric" autocomplete="off"></div>
+        <div class="fl" id="soldDateBox"><label for="soldDate">Sold on</label><input id="soldDate" type="date"></div>
+      </div>
+      <p class="note" id="nextDrive" style="margin-top:12px"></p>
+      <div id="leadList"></div>
+      <div class="row"><button class="act sec" type="button" id="addLead">Add a buyer</button></div>
+      <div class="tips" style="margin-top:18px">
+        <h3 class="h3">Before a test drive</h3>
+        <ul>
+          <li>Meet in daylight in a busy public place, or at home with someone else there.</li>
+          <li>Look at their driver's licence and take a photo of it.</li>
+          <li>Check that insurance covers them as the driver, yours or theirs.</li>
+          <li>Ride along, and keep the keys until you are both in the car.</li>
+          <li>Count cash together; confirm a bank draft with the bank that issued it.</li>
+          <li>Don't sign over ownership until the payment has fully cleared.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="profit">
+      <h2>Profit</h2>
+      <p class="note" style="margin-bottom:12px">Repair costs come from your repair notes. The asking price comes from the ad writer.</p>
+      <div class="fgrid">
+        <div class="fl"><label for="buyPrice">Bought for ($)</label><input id="buyPrice" inputmode="numeric" autocomplete="off"></div>
+        <div class="fl"><label for="askShow">Asking price ($)</label><input id="askShow" inputmode="numeric" autocomplete="off"></div>
+      </div>
+      <h3 class="h3" style="margin-top:18px">Other costs</h3>
+      <div id="costList"></div>
+      <div class="chips" id="costPresets" style="margin-top:10px">
+        <button class="chip plus" type="button" data-cost="Safety inspection">Safety inspection</button>
+        <button class="chip plus" type="button" data-cost="Registration and transfer">Registration and transfer</button>
+        <button class="chip plus" type="button" data-cost="Listing fee">Listing fee</button>
+        <button class="chip plus" type="button" data-cost="Detailing">Detailing</button>
+        <button class="chip plus" type="button" data-cost="Gas and towing">Gas and towing</button>
+        <button class="chip plus" type="button" data-cost="">Other</button>
+      </div>
+      <div id="profitTable"></div>
+    </section>
+
+    <section id="bos">
+      <h2>Bill of sale</h2>
+      <p class="note" style="margin-bottom:12px">Fills in from this car's details. Some provinces and states have their own official form or extra steps, like a lien search or a safety certificate, so check your local rules before you sign.</p>
+      <div class="fgrid" id="bosForm">
+        <div class="fl"><label for="bos-seller">Seller's name</label><input id="bos-seller" data-b="seller" autocomplete="name"></div>
+        <div class="fl"><label for="bos-sellerAddr">Seller's address</label><input id="bos-sellerAddr" data-b="sellerAddr" autocomplete="street-address"></div>
+        <div class="fl"><label for="bos-pickBuyer">Buyer from your list</label><select id="bos-pickBuyer"></select></div>
+        <div class="fl"><label for="bos-buyer">Buyer's name</label><input id="bos-buyer" data-b="buyer" autocomplete="off"></div>
+        <div class="fl full"><label for="bos-buyerAddr">Buyer's address</label><input id="bos-buyerAddr" data-b="buyerAddr" autocomplete="off"></div>
+        <div class="fl"><label for="bos-date">Date of sale</label><input id="bos-date" type="date" data-b="date"></div>
+        <div class="fl"><label for="bos-price">Price ($)</label><input id="bos-price" data-b="price" inputmode="numeric" autocomplete="off"></div>
+        <div class="fl"><label for="bos-pay">Paid by</label><select id="bos-pay" data-b="pay"><option>Cash</option><option>Bank draft</option><option>E-transfer</option><option>Certified cheque</option><option>Other</option></select></div>
+        <div class="fl"><label for="bos-odo">Odometer at sale</label><input id="bos-odo" data-b="odo" inputmode="numeric" autocomplete="off"></div>
+        <label class="chk full"><input type="checkbox" id="bos-asis" data-b="asis"> Sold as is, with no warranty</label>
+        <div class="fl full"><label for="bos-terms">Other terms (optional)</label><textarea id="bos-terms" data-b="terms" rows="2"></textarea></div>
+      </div>
+      <div class="row"><button class="act" type="button" id="bosPrint">Print or save as PDF</button><button class="act sec" type="button" id="bosSave">Save as file</button><button class="act sec" type="button" id="bosCopy">Copy text</button></div>
+      <p class="note" id="bosMissing" style="margin-top:10px"></p>
+    </section>
+
+    <section id="backup">
+      <h2>Backup</h2>
+      <p class="note">Everything lives only on this phone. Save a backup file now and then, especially before switching phones or clearing Chrome. Walk-around videos aren't included, so save those separately.</p>
+      <div class="row"><button class="act" type="button" id="bkSave">Save a backup</button><label class="act sec btnlabel" for="bkFile">Restore from backup</label><input type="file" id="bkFile" class="vh" accept=".zip,application/zip"><span class="note" id="bkMsg"></span></div>
+      <div class="row" id="bkConfirmRow" hidden><button class="act" type="button" id="bkConfirm">Replace everything with this backup</button><button class="act sec" type="button" id="bkCancel">Cancel</button></div>
     </section>
 
     <p class="foot" id="foot">Photos and car details stay on this phone and are never uploaded. Location data is stripped from each photo when you add it.</p>
@@ -447,11 +550,19 @@ input[type=checkbox]{width:22px;height:22px;min-height:0;padding:0;margin:2px 0 
     <p class="vhint" id="vHint"></p>
     <div class="vq" id="vQ"></div>
     <div class="vact" id="vAct">
+      <button type="button" id="vFix">Auto-fix</button>
+      <button type="button" id="vStr">Straighten</button>
       <button type="button" id="vBlur">Blur licence plate</button>
       <button type="button" id="vCam">Retake</button><button type="button" id="vGal">Choose another</button>
       <button type="button" id="vSave" hidden>Save to device</button>
       <button type="button" id="vRestore" hidden>Undo edits</button>
       <button type="button" id="vDel">Remove photo</button>
+    </div>
+    <div class="vact" id="vStrAct" hidden>
+      <label for="vAng" class="fl-l" style="width:100%">Turn until the horizon or ground line is level: <span id="vAngV">0°</span></label>
+      <input type="range" id="vAng" min="-10" max="10" step="0.5" value="0" style="width:100%;min-height:44px;padding:0;border:0">
+      <button type="button" class="primary" id="vStrApply">Apply</button>
+      <button type="button" id="vStrCancel">Cancel</button>
     </div>
     <div class="vact" id="vBlurAct" hidden>
       <button type="button" class="primary" id="vApply">Blur the boxes</button>
@@ -485,6 +596,20 @@ input[type=checkbox]{width:22px;height:22px;min-height:0;padding:0;margin:2px 0 
 <input type="file" id="camIn" class="vh" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
 <input type="file" id="galIn" class="vh" accept="image/*" tabindex="-1" aria-hidden="true">
 <div class="toast" id="toast" role="status" hidden></div>
+<div class="camv" id="recView" hidden role="dialog" aria-modal="true" aria-label="Walk-around video">
+  <video id="recVid" playsinline muted autoplay></video>
+  <div class="camtop"><div><b id="recTime">Ready</b><span>One minute, walk slowly and keep the phone sideways.</span></div><button class="x" type="button" id="recClose" aria-label="Close">×</button></div>
+  <div class="recprompt" id="recPrompt">Start at the front corner on the driver side</div>
+  <div class="cambar"><button class="shutter rec" type="button" id="recBtn" aria-label="Start recording"></button></div>
+</div>
+<div class="camv" id="vinView" hidden role="dialog" aria-modal="true" aria-label="Scan VIN">
+  <video id="vinVid" playsinline muted autoplay></video>
+  <div class="vinframe"></div>
+  <div class="camtop"><div><b>Scan the VIN</b><span id="vinHint">Point at the VIN barcode on the driver's door jamb.</span></div><button class="x" type="button" id="vinClose" aria-label="Close">×</button></div>
+  <div class="cambar"><button type="button" id="vinClaude" hidden>Read it with Claude</button><button type="button" id="vinType">Type it instead</button></div>
+</div>
+<div id="printArea"></div>
+
 
 <script>
 {
@@ -586,7 +711,7 @@ const gIdx=g=>GROUPS.findIndex(x=>x[0]===g);
 const use=n=>{try{return window.claude&&typeof window.claude.use==="function"?Promise.resolve(window.claude.use(n)).catch(()=>null):Promise.resolve(null)}catch(e){return Promise.resolve(null)}};
 
 /* ---------- state ---------- */
-function blankCar(){return{id:uid(),type:"sedan",level:"ess",feats:[],done:{},dmg:[],work:[],ad:{unit:"km"},site:"fb"}}
+function blankCar(){return fix({id:uid(),type:"sedan",level:"ess",feats:[],done:{},dmg:[],work:[],ad:{unit:"km"},site:"fb"})}
 function exampleCar(){return{id:"ex1",type:"suv",level:"ess",feats:["heater","remote","tires2","records","heated","damage"],done:{fd:1,d:1,wheel:1},dmg:[{id:"m1",u:-.31,v:.5,kind:"rust",size:"m"}],work:[{id:"w1",text:"Full interior detail and shampoo the seats",pri:"fix",cost:"150",done:false}],ad:{year:"2016",make:"Honda",model:"CR-V",trim:"EX",km:"148500",unit:"km",price:"18900",colour:"Silver",trans:"Automatic",drive:"AWD",owners:"2",acc:"none",title:"paid",reason:"Moving up to a minivan",loc:"",vin:"",notes:""},site:"fb"}}
 function fix(c){
   if(!TYPES[c.type])c.type="sedan";
@@ -598,6 +723,10 @@ function fix(c){
   c.dmg=Array.isArray(c.dmg)?c.dmg.filter(m=>m&&isFinite(m.u)&&isFinite(m.v)):[];
   c.ad=c.ad&&typeof c.ad==="object"?c.ad:{unit:"km"};
   c.work=Array.isArray(c.work)?c.work.filter(w=>w&&w.id):[];
+  c.leads=Array.isArray(c.leads)?c.leads.filter(l=>l&&l.id):[];
+  c.money=c.money&&typeof c.money==="object"?c.money:{};c.money.costs=Array.isArray(c.money.costs)?c.money.costs.filter(k=>k&&k.id):[];
+  c.bos=c.bos&&typeof c.bos==="object"?c.bos:{};
+  if(!["sale","pending","sold"].includes(c.status))c.status="sale";
   if(!SITES[c.site])c.site="fb";
   if(!c.id)c.id=uid();
   return c;
@@ -609,7 +738,7 @@ function load(){
   let v1=null;
   try{v1=JSON.parse(localStorage.getItem(OLD))}catch(e){}
   if(v1&&TYPES[v1.type]&&!v1.ex){const c=fix({type:v1.type,level:v1.level,feats:v1.feats,done:v1.done});return{cars:[c],cur:c.id,ex:0}}
-  const c=exampleCar();
+  const c=fix(exampleCar());
   return{cars:[c],cur:c.id,ex:1};
 }
 let app=load();
@@ -631,15 +760,15 @@ async function idbTx(fn){
   try{const d=await idb();await new Promise((res,rej)=>{const t=d.transaction("p","readwrite");fn(t.objectStore("p"));t.oncomplete=res;t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)});return true}
   catch(e){return false}
 }
-function storeRec(key){const r=P[key];if(!r)return;idbTx(s=>s.put({key,blob:r.blob,orig:r.orig||null,q:r.q||null,ai:r.ai||null,w:r.w,h:r.h})).then(ok=>{if(!ok&&persistOK){persistOK=false;renderFoot()}})}
+function storeRec(key){const r=P[key];if(!r)return;idbTx(s=>s.put({key,blob:r.blob,orig:r.orig||null,q:r.q||null,ai:r.ai||null,w:r.w,h:r.h,type:r.type||null,kind:r.kind||null})).then(ok=>{if(!ok&&persistOK){persistOK=false;renderFoot()}})}
 function setRec(key,rec){const old=P[key];if(old&&old.url)URL.revokeObjectURL(old.url);rec.url=URL.createObjectURL(rec.blob);P[key]=rec;storeRec(key)}
 function dropRec(key){const old=P[key];if(old&&old.url)URL.revokeObjectURL(old.url);delete P[key];idbTx(s=>s.delete(key))}
 async function loadPhotos(){
   try{
     const d=await idb();
     const all=await new Promise((res,rej)=>{const r=d.transaction("p").objectStore("p").getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)});
-    all.forEach(r=>{if(r&&r.blob){P[r.key]={blob:r.blob,orig:r.orig||null,q:r.q||null,ai:r.ai||null,w:r.w,h:r.h,url:URL.createObjectURL(r.blob)}}});
-    render();
+    all.forEach(r=>{if(r&&r.blob){P[r.key]={blob:r.blob,orig:r.orig||null,q:r.q||null,ai:r.ai||null,w:r.w,h:r.h,type:r.type||null,kind:r.kind||null,url:URL.createObjectURL(r.blob)}}});
+    render();renderVideo();
   }catch(e){persistOK=false;renderFoot()}
 }
 
@@ -697,7 +826,7 @@ function issuesOf(r){
 function carName(c,i){const a=c.ad||{};const n=[a.year,a.make,a.model].map(s=>(s||"").trim()).filter(Boolean).join(" ");return n||("Car "+(i+1)+" ("+TYPES[c.type].l+")")}
 function renderCars(){
   const sel=$("carSel");sel.textContent="";
-  app.cars.forEach((c,i)=>{const o=document.createElement("option");o.value=c.id;o.textContent=carName(c,i);sel.appendChild(o)});
+  app.cars.forEach((c,i)=>{const o=document.createElement("option");o.value=c.id;o.textContent=carName(c,i)+(c.status==="sold"?" (sold)":c.status==="pending"?" (pending)":"");sel.appendChild(o)});
   sel.value=car().id;
 }
 function render(){
@@ -795,7 +924,7 @@ function draw(){
     else if(k.startsWith("m-")){const m=c.dmg.find(d=>"m-"+d.id===k);if(!m)return;x=X(m.u);y=Y(m.v);dia=true}
     else{x=X(P2.sp[k]);y=cy}
     const todo=arr.filter(s=>!c.done[s.id]),dn=!todo.length;
-    const lab=esc(arr.map(s=>s.n+". "+s.name).join(", ")+(dn?" (all done)":""));
+    const lab=esc(arr.map(s=>shotTitle(s)).join(", ")+(dn?" (all done)":""));
     let g='<g transform="translate('+f(x)+" "+f(y)+')"><g class="pin'+(dn?" done":"")+(k===lastSpot?" pop":"")+'" data-spot="'+k+'" tabindex="0" role="button" aria-label="'+lab+'">';
     if(todo.length>1&&!dia)g+='<circle class="stk" cx="3.5" cy="-3.5" r="'+f(r)+'"/>';
     if(ext){
@@ -870,7 +999,7 @@ $("kinds").addEventListener("click",e=>{
 function removeMark(id){
   const c=car();
   c.dmg=c.dmg.filter(d=>d.id!==id);
-  ["dw-","dc-"].forEach(pf=>{delete c.done[pf+id];if(photo(pf+id))dropRec(pk(pf+id))});
+  ["dw-","dc-","after-"].forEach(pf=>{delete c.done[pf+id];if(photo(pf+id))dropRec(pk(pf+id))});
   touch();render();updateAd();
 }
 $("sDel").addEventListener("click",()=>{if(pending&&pending.id)removeMark(pending.id);closeModal("sheet")});
@@ -907,7 +1036,7 @@ function analyze(cv,shot,ow,oh){
   return{issues,mean:Math.round(mean),lap:Math.round(lap)};
 }
 async function intake(id,file){
-  const c=car(),key=c.id+":"+id,shot=cur.find(s=>s.id===id);
+  const c=car(),key=c.id+":"+id,shot=shotById(id);
   let im;
   try{im=await loadImg(file)}catch(e){toast("Couldn't read that photo. Try another.");return}
   const ow=im.naturalWidth,oh=im.naturalHeight,sc=Math.min(1,2400/Math.max(ow,oh));
@@ -946,9 +1075,9 @@ document.addEventListener("change",e=>{if(e.target&&e.target.type==="file"&&e.ta
 /* ---------- take or choose a photo ---------- */
 let pendId=null;
 function openPick(id){
-  const s=cur.find(x=>x.id===id);if(!s)return;
+  const s=shotById(id);if(!s)return;
   pendId=id;
-  $("pkTitle").textContent=s.n+". "+s.name;
+  $("pkTitle").textContent=shotTitle(s);
   $("pkFig").innerHTML=sketch(s.fr,s.fl);
   $("pkTip").textContent=s.tipT;
   openModal("pickSheet");
@@ -977,7 +1106,7 @@ function setDone(id,val){
   const c=car();
   if(val)c.done[id]=1;else delete c.done[id];
   touch();
-  const s=cur.find(x=>x.id===id);
+  const s=shotById(id);
   lastSpot=val&&s&&s.spot?s.spot:null;
   render();
 }
@@ -1009,7 +1138,7 @@ armBtn($("delCar"),"Delete",()=>{
 armBtn($("clear"),"Clear checks",()=>{car().done={};touch();render()});
 $("copy").addEventListener("click",()=>{
   const c=car();let t="Photo shot list: "+carName(c,app.cars.indexOf(c))+"\n";
-  GROUPS.forEach(([g,label])=>{const rows=cur.filter(s=>s.g===g);if(!rows.length)return;t+="\n"+label+"\n";rows.forEach(s=>{t+=(c.done[s.id]?"[x] ":"[ ] ")+s.n+". "+s.name+"\n"})});
+  GROUPS.forEach(([g,label])=>{const rows=cur.filter(s=>s.g===g);if(!rows.length)return;t+="\n"+label+"\n";rows.forEach(s=>{t+=(c.done[s.id]?"[x] ":"[ ] ")+shotTitle(s)+"\n"})});
   copyText(t,$("copy"),"Copy list");
 });
 async function copyText(txt,btn,label){
@@ -1086,10 +1215,10 @@ const V={id:null,img:null,boxes:[],drag:null,mode:"view"};
 const vc=$("vCan");
 async function openViewer(id){
   const r=photo(id);if(!r)return;
-  const s=cur.find(x=>x.id===id);
+  const s=shotById(id);
   V.id=id;V.boxes=[];V.drag=null;
   try{V.img=await loadImg(r.blob)}catch(e){toast("Couldn't open that photo.");return}
-  $("vTitle").textContent=s?s.n+". "+s.name:"Photo";
+  $("vTitle").textContent=shotTitle(s);
   setVMode("view");paintV();renderVQ();
   openModal("viewer");
 }
@@ -1097,15 +1226,17 @@ function paintV(){
   if(!V.img)return;
   const w=V.img.naturalWidth,h=V.img.naturalHeight;
   if(vc.width!==w||vc.height!==h){vc.width=w;vc.height=h}
-  const x=vc.getContext("2d");x.drawImage(V.img,0,0);
+  const x=vc.getContext("2d");
+  if(V.mode==="str"){x.fillStyle="#000";x.fillRect(0,0,w,h);drawRotated(x,V.img,w,h,V.ang||0);x.strokeStyle="rgba(255,255,255,.45)";x.lineWidth=Math.max(1,w/900);for(let i=1;i<6;i++){x.beginPath();x.moveTo(0,h*i/6);x.lineTo(w,h*i/6);x.stroke()}return}
+  x.drawImage(V.img,0,0);
   const lw=Math.max(3,w/320);x.lineWidth=lw;x.strokeStyle="#ef3b2a";x.fillStyle="rgba(239,59,42,.3)";
   V.boxes.concat(V.drag?[V.drag]:[]).forEach(b=>{const bx=Math.min(b.x0,b.x1),by=Math.min(b.y0,b.y1),bw=Math.abs(b.x1-b.x0),bh=Math.abs(b.y1-b.y0);x.fillRect(bx,by,bw,bh);x.strokeRect(bx,by,bw,bh)});
 }
 function setVMode(m){
   V.mode=m;
-  $("vAct").hidden=m!=="view";$("vBlurAct").hidden=m!=="blur";
+  $("vAct").hidden=m!=="view";$("vBlurAct").hidden=m!=="blur";$("vStrAct").hidden=m!=="str";
   vc.classList.toggle("drawing",m==="blur");
-  $("vHint").textContent=m==="blur"?"Drag a box over each licence plate, then tap Blur the boxes.":"";
+  $("vHint").textContent=m==="blur"?"Drag a box over each licence plate, then tap Blur the boxes.":m==="str"?"The edges are trimmed slightly so there are no empty corners.":"";
   const r=photo(V.id);
   $("vRestore").hidden=!(r&&r.orig);
   $("vSave").hidden=!DL;
@@ -1154,7 +1285,7 @@ $("vGal").addEventListener("click",()=>startPick(V.id,"gal"));
 armBtn($("vDel"),"Remove photo",()=>{dropRec(pk(V.id));closeModal("viewer");render();toast("Photo removed. The shot stays ticked.")});
 $("vClose").addEventListener("click",()=>closeModal("viewer"));
 $("vSave").addEventListener("click",async()=>{
-  if(!DL)return;const s=cur.find(x=>x.id===V.id),r=photo(V.id);if(!r)return;
+  if(!DL)return;const s=shotById(V.id),r=photo(V.id);if(!r)return;
   try{await DL.save({filename:slug(s?s.name:"photo")+".jpg",data:r.blob});toast("Saved.")}catch(e){toast(dlError(e))}
 });
 /* ---------- ad writer ---------- */
@@ -1163,6 +1294,7 @@ function fillAd(){
   const a=car().ad;
   adForm.querySelectorAll("[data-k]").forEach(el=>{el.value=a[el.dataset.k]!=null?a[el.dataset.k]:(el.dataset.k==="unit"?"km":"")});
   updateAd();
+  if(typeof fillExtras==="function")fillExtras();
 }
 function buildAd(c){
   const a=c.ad||{},T=TYPES[c.type],t=k=>String(a[k]||"").trim();
@@ -1171,7 +1303,7 @@ function buildAd(c){
   const prN=num(a.price),price=prN?"$"+prN.toLocaleString("en-CA"):"";
   const title=[name,km,price].filter(Boolean).join(" | ");
   const out=[];
-  const spec=[t("colour"),t("trans").toLowerCase(),t("drive")].filter(Boolean);
+  const spec=[t("colour"),t("engine"),t("trans").toLowerCase(),t("drive")].filter(Boolean);
   let p1=name+" for sale.";if(spec.length)p1+=" "+cap1(spec.join(", "))+".";if(km)p1+=" "+km+".";out.push(p1);
   const ex=c.feats.map(f=>FEAT_AD[f]).filter(Boolean);if(ex.length)out.push("Comes with "+listJoin(ex)+".");
   const cs=[];
@@ -1213,7 +1345,7 @@ function updateAd(){
   if(!q.length){const li=document.createElement("li");li.textContent="Your ad already answers the usual questions.";ul.appendChild(li)}
   q.forEach(s=>{const li=document.createElement("li");li.textContent=s;ul.appendChild(li)});
 }
-adForm.addEventListener("input",e=>{const k=e.target.dataset.k;if(!k)return;const c=car();c.ad[k]=e.target.value;touch();updateAd();if(["year","make","model"].includes(k))renderCars()});
+adForm.addEventListener("input",e=>{const k=e.target.dataset.k;if(!k)return;const c=car();c.ad[k]=e.target.value;touch();updateAd();if(["year","make","model"].includes(k))renderCars();if(k==="price"){$("askShow").value=e.target.value;renderProfitTable()}if(typeof fillBos==="function")fillBos()});
 adForm.addEventListener("change",e=>{const k=e.target.dataset.k;if(!k)return;car().ad[k]=e.target.value;touch();updateAd()});
 $("adOut").addEventListener("input",e=>{const a=car().ad;a.custom=1;a.text=e.target.value;touch();$("adReset").hidden=false});
 $("adReset").addEventListener("click",()=>{const a=car().ad;a.custom=0;a.text="";touch();updateAd();$("adMsg").textContent=""});
@@ -1240,7 +1372,7 @@ $("shareBtn").addEventListener("click",async()=>{
 const hasCam=!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
 $("pkGuide").hidden=!hasCam;
 const CV={id:null,stream:null,blob:null,still:null};
-function camShot(){return cur.find(x=>x.id===CV.id)}
+function camShot(){return shotById(CV.id)}
 function layoutGhost(){
   const v=$("camVid"),g=$("camGhost"),vw=v.videoWidth||16,vh=v.videoHeight||9,W=innerWidth,H=innerHeight;
   const sc=Math.min(W/vw,H/vh),dw=vw*sc,dh=vh*sc,fw=Math.min(dw,dh*1.5)*.92,fh=fw/1.5;
@@ -1248,10 +1380,10 @@ function layoutGhost(){
   const s=camShot();$("camTurn").hidden=!(s&&s.wide&&H>W*1.05);
 }
 async function openCam(id){
-  const s=cur.find(x=>x.id===id);if(!s)return;
+  const s=shotById(id);if(!s)return;
   if(!hasCam){startPick(id,"cam");return}
   CV.id=id;CV.blob=null;
-  $("camTitle").textContent=s.n+". "+s.name;
+  $("camTitle").textContent=shotTitle(s);
   $("camHint").textContent=s.tipT;
   $("camGhost").innerHTML=sketch(s.fr,s.fl);
   $("camStill").hidden=true;$("camLive").hidden=false;$("camReview").hidden=true;$("camGhost").hidden=false;
@@ -1342,7 +1474,7 @@ function renderRepairs(){
       +'<div class="fl full"><label for="rf-'+id+'">What needs to be done</label><textarea id="rf-'+id+'" data-rf="fix" rows="3">'+esc(fixOf(m,T))+"</textarea></div>"
       +'<div class="fl"><label for="rc-'+id+'">Estimate ($)</label><input id="rc-'+id+'" data-rf="cost" value="'+esc(m.cost||"")+'" placeholder="150 or 100-200" autocomplete="off"></div>'
       +'<label class="chk"><input type="checkbox" data-rf="done"'+(m.done?" checked":"")+"> Fixed</label>"
-      +"</div>"+(m.note?'<p class="note" style="margin-top:8px">Claude noticed: '+esc(m.note)+"</p>":"")+'<button class="rrm" type="button" data-rmk="'+id+'">Remove this mark</button></div>';
+      +"</div>"+(m.note?'<p class="note" style="margin-top:8px">Claude noticed: '+esc(m.note)+"</p>":"")+(m.done?baRow(m):"")+'<button class="rrm" type="button" data-rmk="'+id+'">Remove this mark</button></div>';
   });
   c.work.forEach(w=>{
     const id=w.id;
@@ -1357,6 +1489,11 @@ function renderRepairs(){
   $("repList").innerHTML=h;
   renderRepSum();
 }
+function baRow(m){
+  const bk=photo("dc-"+m.id)?"dc-"+m.id:photo("dw-"+m.id)?"dw-"+m.id:null,b=bk?photo(bk):null,a=photo("after-"+m.id);
+  return'<div class="ba">'+(b?'<button class="bat" type="button" data-view="'+bk+'"><img src="'+b.url+'" alt=""><span>Before</span></button>':"")
+    +(a?'<button class="bat" type="button" data-view="after-'+m.id+'"><img src="'+a.url+'" alt=""><span>After</span></button>':'<button class="act sec" type="button" data-after="'+m.id+'">Add after photo</button>')+"</div>";
+}
 function repItems(c){
   const T=c.type;
   return c.dmg.map(m=>({title:(KINDS[m.kind]||"Damage")+", "+nameOf(m,T),detail:SIZE_SHORT[m.size||"m"]+(m.deep?", "+DEEP[m.kind in KINDS?m.kind:"other"].toLowerCase():""),fix:fixOf(m,T),pri:priOf(m,T),cost:m.cost||"",done:!!m.done}))
@@ -1364,6 +1501,7 @@ function repItems(c){
 }
 function totals(items){let lo=0,hi=0,priced=0;items.forEach(it=>{const r=costRange(it.cost);if(r){lo+=r[0];hi+=r[1];priced++}});return{lo,hi,priced}}
 function renderRepSum(){
+  if(typeof renderProfitTable==="function"&&$("profitTable"))renderProfitTable();
   const c=car(),items=repItems(c),open=items.filter(i=>!i.done),done=items.length-open.length;
   const before=open.filter(i=>i.pri==="fix"),t=totals(open),tb=totals(before);
   if(!items.length){$("repSum").innerHTML='<b>Nothing to fix yet</b>Marked damage and other work will add up here.';return}
@@ -1393,13 +1531,17 @@ repList.addEventListener("change",e=>{
   const t=repTarget(e.target);if(!t)return;const o=t.m||t.w;if(!o)return;
   if(e.target.type==="checkbox")o[f]=e.target.checked;else o[f]=e.target.value;
   touch();
-  if(f==="done"&&t.m){render();updateAd();toast(o.done?"Marked fixed. It's out of the ad and the shot list.":"Back on the to-do list.")}
-  else if(f==="done"){renderRepairs()}
-  else if(f==="pri")renderRepSum();
-  else renderRepairs();
+  setTimeout(()=>{
+    if(f==="done"&&t.m){render();updateAd();toast(o.done?"Marked fixed and out of the ad. Add an after photo on its card.":"Back on the to-do list.")}
+    else if(f==="done"){renderRepairs()}
+    else if(f==="pri")renderRepSum();
+    else renderRepairs();
+  },0);
 });
 repList.addEventListener("click",e=>{
   const a=e.target.closest("[data-rmk]");if(a){removeMark(a.dataset.rmk);return}
+  const av=e.target.closest("[data-after]");if(av){openPick("after-"+av.dataset.after);return}
+  const vw=e.target.closest("[data-view]");if(vw){openViewer(vw.dataset.view);return}
   const b=e.target.closest("[data-rmw]");if(b){const c=car();c.work=c.work.filter(w=>w.id!==b.dataset.rmw);touch();renderRepairs()}
 });
 $("addWork").addEventListener("click",()=>{const c=car(),w={id:uid(),text:"",pri:"fix",cost:"",done:false};c.work.push(w);touch();renderRepairs();const el=$("rw-"+w.id);if(el)el.focus()});
@@ -1524,6 +1666,359 @@ $("scanRes").addEventListener("click",e=>{
   $("scanMsg").textContent="Added "+add.length+". Each one is on the car map and has its own photos to take.";
 });
 renderScanUI();
+
+/* ---------- shared helpers for the newer features ---------- */
+const shotTitle=s=>s?(typeof s.n==="number"?s.n+". "+s.name:s.name):"Photo";
+function afterShot(id){
+  if(!String(id).startsWith("after-"))return null;
+  const c=car(),m=c.dmg.find(d=>"after-"+d.id===id);if(!m)return null;
+  return{id,n:"After",name:"After repair: "+(KINDS[m.kind]||"Damage").toLowerCase()+", "+nameOf(m,c.type),tipT:"Same angle and distance as the close-up, so the repair is easy to compare.",fr:"detail",g:"after"};
+}
+const shotById=id=>cur.find(x=>x.id===id)||afterShot(id);
+const todayISO=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const titleCase=s=>String(s||"").toLowerCase().replace(/\b[a-z]/g,ch=>ch.toUpperCase());
+
+/* ---------- photo auto-fix and straighten ---------- */
+function autoFix(img){
+  const w=img.naturalWidth,h=img.naturalHeight,cv=document.createElement("canvas");cv.width=w;cv.height=h;
+  const x=cv.getContext("2d",{willReadFrequently:true});x.drawImage(img,0,0);
+  const id=x.getImageData(0,0,w,h),d=id.data,n=w*h,step=Math.max(1,Math.floor(n/250000));
+  const hist=new Uint32Array(256);let sr=0,sg=0,sb=0,cnt=0;
+  for(let i=0;i<n;i+=step){const j=i*4,r=d[j],g=d[j+1],b=d[j+2];hist[(.2126*r+.7152*g+.0722*b)|0]++;sr+=r;sg+=g;sb+=b;cnt++}
+  let acc=0,lo=0,hi=255;
+  for(let v=0;v<256;v++){acc+=hist[v];if(acc>=cnt*.01){lo=v;break}}
+  acc=0;for(let v=255;v>=0;v--){acc+=hist[v];if(acc>=cnt*.01){hi=v;break}}
+  if(hi-lo<40){lo=Math.max(0,lo-20);hi=Math.min(255,hi+20)}
+  const avg=(sr+sg+sb)/(3*cnt),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const gr=clamp(avg/(sr/cnt||1),.88,1.12),gg=clamp(avg/(sg/cnt||1),.88,1.12),gb=clamp(avg/(sb/cnt||1),.88,1.12);
+  const span=255/Math.max(1,hi-lo);
+  let mean=0;for(let v=0;v<256;v++)mean+=hist[v]*clamp((v-lo)*span,0,255);mean/=cnt;
+  const gamma=mean<105?clamp(Math.log(.45)/Math.log(Math.max(mean,1)/255),.6,1):mean>165?clamp(Math.log(.55)/Math.log(mean/255),1,1.4):1;
+  const lut=new Uint8ClampedArray(256);for(let v=0;v<256;v++)lut[v]=255*Math.pow(clamp((v-lo)*span,0,255)/255,gamma);
+  for(let j=0;j<d.length;j+=4){d[j]=lut[clamp(d[j]*gr,0,255)|0];d[j+1]=lut[clamp(d[j+1]*gg,0,255)|0];d[j+2]=lut[clamp(d[j+2]*gb,0,255)|0]}
+  x.putImageData(id,0,0);return cv;
+}
+function drawRotated(ctx,img,w,h,deg){
+  const t=Math.abs(deg)*Math.PI/180,s=Math.max((w*Math.cos(t)+h*Math.sin(t))/w,(w*Math.sin(t)+h*Math.cos(t))/h);
+  ctx.save();ctx.translate(w/2,h/2);ctx.rotate(deg*Math.PI/180);ctx.scale(s,s);ctx.drawImage(img,-w/2,-h/2,w,h);ctx.restore();
+}
+async function saveEdit(cv,msg){
+  const blob=await toBlob(cv,.92),key=pk(V.id),r=P[key];if(!blob||!r)return;
+  setRec(key,{blob,orig:r.orig||r.blob,q:r.q,ai:r.ai,w:r.w,h:r.h});
+  V.img=await loadImg(blob);setVMode("view");paintV();render();toast(msg);
+}
+$("vFix").addEventListener("click",async()=>{if(!V.img)return;$("vFix").disabled=true;await new Promise(r=>setTimeout(r,30));try{await saveEdit(autoFix(V.img),"Brightness and colour adjusted. Undo edits brings back the original.")}finally{$("vFix").disabled=false}});
+$("vStr").addEventListener("click",()=>{V.ang=0;$("vAng").value=0;$("vAngV").textContent="0°";setVMode("str");paintV()});
+$("vAng").addEventListener("input",e=>{V.ang=Number(e.target.value)||0;$("vAngV").textContent=(V.ang>0?"+":"")+V.ang+"°";paintV()});
+$("vStrCancel").addEventListener("click",()=>{V.ang=0;setVMode("view");paintV()});
+$("vStrApply").addEventListener("click",async()=>{if(!V.img)return;if(!V.ang){setVMode("view");paintV();return}const w=V.img.naturalWidth,h=V.img.naturalHeight,cv=document.createElement("canvas");cv.width=w;cv.height=h;drawRotated(cv.getContext("2d"),V.img,w,h,V.ang);await saveEdit(cv,"Straightened.")});
+
+/* ---------- VIN scan and lookup ---------- */
+const VINRE=/^[A-HJ-NPR-Z0-9]{17}$/;
+function vinCheck(v){
+  const map={A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,J:1,K:2,L:3,M:4,N:5,P:7,R:9,S:2,T:3,U:4,V:5,W:6,X:7,Y:8,Z:9},wt=[8,7,6,5,4,3,2,10,0,9,8,7,6,5,4,3,2];
+  let s=0;for(let i=0;i<17;i++){const ch=v[i];s+=(/\d/.test(ch)?Number(ch):map[ch]||0)*wt[i]}
+  const r=s%11;return(r===10?"X":String(r))===v[8];
+}
+const cleanVin=s=>{let v=String(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"");if(v.length===18&&v[0]==="I")v=v.slice(1);return v};
+function setVinMsg(t){$("vinMsg").textContent=t}
+async function lookupVin(raw){
+  const v=cleanVin(raw);
+  if(!VINRE.test(v)){setVinMsg("A VIN is 17 letters and numbers, with no I, O or Q.");return}
+  const c=car();c.ad.vin=v;$("ad-vin").value=v;touch();
+  setVinMsg("Looking up "+v+"…");
+  let res=null;
+  try{const r=await fetch("https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/"+v+"?format=json");const j=await r.json();res=j&&j.Results&&j.Results[0]}
+  catch(e){setVinMsg("Couldn't reach the VIN lookup. Check your connection and try again; the VIN is saved.");updateAd();return}
+  if(!res||!res.Make){setVinMsg("The lookup didn't recognise this VIN. Check it against the sticker"+(vinCheck(v)?".":"; its check digit doesn't add up, so a character may be off."));updateAd();return}
+  const a=c.ad,filled=[];
+  const mk=String(res.Make).trim(),make=mk.length<=3?mk.toUpperCase():titleCase(mk);
+  if(res.ModelYear){a.year=String(res.ModelYear);filled.push("year")}
+  a.make=make;filled.push("make");
+  if(res.Model){a.model=String(res.Model).trim();filled.push("model")}
+  const trim=String(res.Trim||res.Series||"").trim();if(trim){a.trim=trim;filled.push("trim")}
+  const dt=String(res.DriveType||"");const drive=/AWD|All.Wheel/i.test(dt)?"AWD":/4WD|4x4|4-Wheel|Four/i.test(dt)?"4x4":/FWD|Front/i.test(dt)?"FWD":/RWD|Rear/i.test(dt)?"RWD":"";
+  if(drive){a.drive=drive;filled.push("drivetrain")}
+  const ts=String(res.TransmissionStyle||"");const trans=/Manual/i.test(ts)?"Manual":/Auto|CVT|Dual/i.test(ts)?"Automatic":"";
+  if(trans){a.trans=trans;filled.push("transmission")}
+  const fuel=String(res.FuelTypePrimary||""),el=String(res.ElectrificationLevel||"");
+  const disp=Number(res.DisplacementL),cyl=Number(res.EngineCylinders);
+  const eng=[disp>0?disp.toFixed(1)+"L":"",cyl>0?cyl+"-cylinder":"",/Electric/i.test(fuel)&&!disp?"electric":/Diesel/i.test(fuel)?"diesel":/HEV|Hybrid/i.test(el)?"hybrid":""].filter(Boolean).join(" ");
+  if(eng){a.engine=eng;filled.push("engine")}
+  const body=String(res.BodyClass||"");
+  let type=/Electric/i.test(fuel)||/BEV|PHEV|HEV|Hybrid/i.test(el)?"ev":/Pickup/i.test(body)?"truck":/Minivan/i.test(body)?"van":/Sport Utility|SUV|Crossover/i.test(body)?"suv":/Coupe|Convertible/i.test(body)?"coupe":/Sedan|Hatchback|Wagon|Liftback/i.test(body)?"sedan":"";
+  let typeMsg="";if(type&&type!==c.type){c.type=type;typeMsg=" Vehicle type set to "+TYPES[type].l+"."}
+  touch();fillAd();renderCars();render();
+  setVinMsg("Filled in "+listJoin(filled)+" for the "+[a.year,a.make,a.model].filter(Boolean).join(" ")+"."+typeMsg+(vinCheck(v)?"":" Note: this VIN's check digit doesn't add up; double-check it."));
+}
+$("vinLook").addEventListener("click",()=>lookupVin($("ad-vin").value));
+const VS={stream:null,timer:0,det:null};
+async function openVinScan(){
+  if(!hasCam){setVinMsg("This phone's browser can't open the camera here. Type the VIN instead.");return}
+  let det=null;
+  try{if("BarcodeDetector" in window){const f=await BarcodeDetector.getSupportedFormats();const want=["code_39","code_128","data_matrix","qr_code","pdf417"].filter(x=>f.includes(x));if(want.length)det=new BarcodeDetector({formats:want})}}catch(e){det=null}
+  VS.det=det;
+  $("vinClaude").hidden=!apiKey;
+  $("vinHint").textContent=det?"Point at the VIN barcode on the driver's door jamb. It reads automatically.":apiKey?"This phone can't read barcodes, but Claude can read the VIN plate or sticker. Frame it and tap Read it with Claude.":"This phone can't read barcodes. Type the VIN instead, or set up Claude scan in Repairs so Claude can read it from the camera.";
+  $("vinView").hidden=false;
+  try{
+    VS.stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080}}});
+    const v=$("vinVid");v.srcObject=VS.stream;await v.play().catch(()=>{});
+  }catch(e){closeVinScan();setVinMsg(e&&e.name==="NotAllowedError"?"Camera permission is off. Allow it in Chrome's site settings, or type the VIN.":"Couldn't start the camera. Type the VIN instead.");return}
+  if(det){
+    const tick=async()=>{
+      if(!VS.stream)return;
+      try{const codes=await det.detect($("vinVid"));for(const cd of codes){const v=cleanVin(cd.rawValue);if(VINRE.test(v)){closeVinScan();if(navigator.vibrate)navigator.vibrate(60);lookupVin(v);return}}}catch(e){}
+      VS.timer=setTimeout(tick,250);
+    };
+    tick();
+  }
+}
+function closeVinScan(){clearTimeout(VS.timer);if(VS.stream){VS.stream.getTracks().forEach(t=>t.stop());VS.stream=null}$("vinVid").srcObject=null;$("vinView").hidden=true}
+$("vinScan").addEventListener("click",openVinScan);
+$("vinClose").addEventListener("click",closeVinScan);
+$("vinType").addEventListener("click",()=>{closeVinScan();$("ad-vin").focus()});
+$("vinClaude").addEventListener("click",async()=>{
+  const v=$("vinVid");if(!v.videoWidth||!apiKey)return;
+  const cv=document.createElement("canvas");cv.width=v.videoWidth;cv.height=v.videoHeight;cv.getContext("2d").drawImage(v,0,0);
+  const blob=await toBlob(cv,.9);closeVinScan();setVinMsg("Claude is reading the VIN…");
+  try{
+    const j=await callClaude([{type:"image",source:{type:"base64",media_type:"image/jpeg",data:await apiImage(blob)}},{type:"text",text:"Read the 17-character vehicle identification number (VIN) in this photo. VINs never contain I, O or Q. Reply with only the VIN, or NONE if you can't read all 17 characters clearly."}]);
+    const t=(j.content||[]).filter(b=>b.type==="text").map(b=>b.text).join(" ");
+    const m=t.toUpperCase().match(/[A-HJ-NPR-Z0-9]{17}/);
+    if(m)lookupVin(m[0]);else setVinMsg("Claude couldn't read the whole VIN. Try again closer, with less glare, or type it.");
+  }catch(e){setVinMsg(scanError(e))}
+});
+
+/* ---------- Claude writes the ad ---------- */
+function renderAdClaude(){$("adClaude").hidden=false;$("adClaudeNote").hidden=!!apiKey}
+$("adClaude").addEventListener("click",async()=>{
+  if(!apiKey){$("adMsg").textContent="Set up Claude scan in the Repairs section first; the same key writes ads.";return}
+  const c=car(),a=c.ad,btn=$("adClaude");
+  const pics=cur.filter(s=>photo(s.id)&&["fd","rp","d","dash","fseats","odo","cargo","bed"].includes(s.id)).slice(0,5);
+  btn.disabled=true;btn.textContent="Claude is writing…";$("adMsg").textContent="";
+  try{
+    const content=[];
+    for(const s of pics)content.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:await apiImage(photo(s.id).blob)}});
+    const facts=["Vehicle: "+[a.year,a.make,a.model,a.trim].filter(Boolean).join(" ")+(a.year?"":" ("+TYPES[c.type].ad+")"),a.km?"Odometer: "+a.km+" "+(a.unit||"km"):"",a.price?"Asking: $"+a.price:"",a.colour?"Colour: "+a.colour:"",a.engine?"Engine: "+a.engine:"",a.trans?"Transmission: "+a.trans:"",a.drive?"Drivetrain: "+a.drive:"",a.owners?"Owners: "+(a.owners==="3"?"3 or more":a.owners):"",a.acc?"Accidents: "+({none:"none",minor:"one minor, repaired",major:"yes, details on request"}[a.acc]||""):"",a.title?"Loan/title: "+({paid:"paid off, no liens",clean:"clean title",financed:"still financed, paid out at sale"}[a.title]||""):"",a.vin?"VIN: "+a.vin:"",a.reason?"Reason for selling: "+a.reason:"",a.loc?"Location: "+a.loc:"",a.notes?"Seller notes: "+a.notes:""].filter(Boolean);
+    const extras=c.feats.map(f=>FEAT_AD[f]).filter(Boolean),flaws=c.dmg.filter(m=>!m.done).map(m=>(KINDS[m.kind]||"damage").toLowerCase()+" on the "+nameOf(m,c.type));
+    content.push({type:"text",text:"Write a listing for a private used car sale on Facebook Marketplace or Kijiji.\n\nFacts from the seller:\n"+facts.join("\n")+(extras.length?"\nComes with: "+extras.join(", "):"")+(flaws.length?"\nKnown flaws that must be mentioned plainly: "+flaws.join("; "):"")+(pics.length?"\n\nThe photos show the car. You may mention what is clearly visible, like a clean interior, but don't guess at anything else.":"")+"\n\nRules: friendly, plain and honest; keep every fact as given and invent nothing; no emojis, hashtags or hype words; plain text; first line is a short title with year, make, model, kilometres and price where known; then 3 to 5 short paragraphs; under 170 words; end by inviting messages to book a viewing or test drive."});
+    const j=await callClaude(content);
+    const t=(j.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("").trim();
+    if(!t)throw{status:0,msg:"Claude didn't send back an ad. Try again."};
+    $("adOut").value=t;a.custom=1;a.text=t;touch();$("adReset").hidden=false;$("adMsg").textContent="Written by Claude. Read it over before you post.";
+  }catch(e){$("adMsg").textContent=scanError(e)}
+  btn.disabled=false;btn.textContent="Write with Claude";
+});
+
+/* ---------- buyers, status ---------- */
+const LSTAT={new:"New",talking:"Talking",drive:"Test drive booked",offer:"Made an offer",sold:"Bought it",no:"Not interested"};
+const SOURCES=["Facebook Marketplace","Kijiji","AutoTrader.ca","Craigslist","Word of mouth","Other"];
+function fmtWhen(s){if(!s)return"";const d=new Date(s);if(isNaN(d))return"";return d.toLocaleString("en-CA",{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}
+function renderBuyers(){
+  const c=car();
+  $("carStatus").value=c.status||"sale";
+  const sold=c.status==="sold";$("soldPriceBox").hidden=!sold;$("soldDateBox").hidden=!sold;
+  $("soldPrice").value=c.soldPrice||"";$("soldDate").value=c.soldDate||"";
+  const order=Object.keys(LSTAT);
+  const leads=c.leads.slice().sort((x,y)=>order.indexOf(x.status)-order.indexOf(y.status));
+  let h="";
+  leads.forEach(l=>{
+    const id=l.id;
+    h+='<div class="rcard" data-lid="'+id+'"><div class="rgrid">'
+      +'<div class="fl"><label for="ln-'+id+'">Name</label><input id="ln-'+id+'" data-l="name" value="'+esc(l.name||"")+'" autocomplete="off"></div>'
+      +'<div class="fl"><label for="lc-'+id+'">Phone or profile</label><input id="lc-'+id+'" data-l="contact" value="'+esc(l.contact||"")+'" autocomplete="off"></div>'
+      +'<div class="fl"><label for="ls-'+id+'">Status</label><select id="ls-'+id+'" data-l="status">'+opts(LSTAT,l.status||"new")+"</select></div>"
+      +'<div class="fl"><label for="lsr-'+id+'">Found you on</label><select id="lsr-'+id+'" data-l="source">'+SOURCES.map(sv=>"<option"+(sv===l.source?" selected":"")+">"+sv+"</option>").join("")+"</select></div>"
+      +'<div class="fl"><label for="lw-'+id+'">Test drive</label><input id="lw-'+id+'" type="datetime-local" data-l="when" value="'+esc(l.when||"")+'"></div>'
+      +'<div class="fl"><label for="lo-'+id+'">Offer ($)</label><input id="lo-'+id+'" data-l="offer" inputmode="numeric" value="'+esc(l.offer||"")+'" autocomplete="off"></div>'
+      +'<div class="fl full"><label for="lnt-'+id+'">Notes</label><input id="lnt-'+id+'" data-l="notes" value="'+esc(l.notes||"")+'" autocomplete="off"></div>'
+      +'</div><button class="rrm" type="button" data-rml="'+id+'">Remove</button></div>';
+  });
+  $("leadList").innerHTML=h||'<div class="empty">No buyers yet. Add each person who messages you to keep track of offers and test drives.</div>';
+  const now=Date.now(),up=c.leads.filter(l=>l.when&&new Date(l.when).getTime()>now-3600e3&&l.status!=="no").sort((x,y)=>new Date(x.when)-new Date(y.when));
+  const offers=c.leads.map(l=>num(l.offer)).filter(Boolean);
+  $("nextDrive").textContent=[up.length?"Next test drive: "+fmtWhen(up[0].when)+(up[0].name?" with "+up[0].name:"")+".":"",offers.length?"Best offer so far: "+money(Math.max(...offers))+".":""].filter(Boolean).join(" ");
+  fillBuyerPick();
+}
+$("carStatus").addEventListener("change",e=>{const c=car();c.status=e.target.value;if(c.status==="sold"&&!c.soldDate)c.soldDate=todayISO();touch();renderBuyers();renderCars();renderProfitTable()});
+$("soldPrice").addEventListener("input",e=>{car().soldPrice=e.target.value;touch();renderProfitTable()});
+$("soldDate").addEventListener("change",e=>{car().soldDate=e.target.value;touch()});
+$("addLead").addEventListener("click",()=>{const c=car(),l={id:uid(),name:"",contact:"",status:"new",source:SOURCES[0],when:"",offer:"",notes:""};c.leads.push(l);touch();renderBuyers();const el=$("ln-"+l.id);if(el)el.focus()});
+$("leadList").addEventListener("input",e=>{const k=e.target.dataset.l;if(!k)return;const card=e.target.closest("[data-lid]"),l=car().leads.find(x=>x.id===card.dataset.lid);if(!l)return;l[k]=e.target.value;touch();if(k==="name")fillBuyerPick()});
+$("leadList").addEventListener("change",e=>{const k=e.target.dataset.l;if(!k)return;const card=e.target.closest("[data-lid]"),l=car().leads.find(x=>x.id===card.dataset.lid);if(!l)return;l[k]=e.target.value;touch();if(k==="status"||k==="when"||k==="offer")setTimeout(renderBuyers,0)});
+$("leadList").addEventListener("click",e=>{const b=e.target.closest("[data-rml]");if(!b)return;const c=car();c.leads=c.leads.filter(l=>l.id!==b.dataset.rml);touch();renderBuyers()});
+
+/* ---------- profit ---------- */
+function renderProfitForm(){
+  const c=car();$("buyPrice").value=c.money.buy||"";$("askShow").value=c.ad.price||"";
+  $("costList").innerHTML=c.money.costs.map(k=>'<div class="costrow" data-cid="'+k.id+'"><input aria-label="Cost" data-c="text" value="'+esc(k.text||"")+'" placeholder="What for" autocomplete="off"><input aria-label="Amount in dollars" data-c="amt" value="'+esc(k.amt||"")+'" placeholder="$" inputmode="numeric" autocomplete="off"><button class="rrm" type="button" data-rmc="'+k.id+'" aria-label="Remove cost">Remove</button></div>').join("")||'<p class="note">No other costs yet. Tap one below to add it.</p>';
+  renderProfitTable();
+}
+function renderProfitTable(){
+  const c=car(),buy=num(c.money.buy),other=c.money.costs.reduce((s,k)=>s+num(k.amt),0),rep=totals(repItems(c));
+  const ask=num(c.ad.price),sold=c.status==="sold"?num(c.soldPrice):0;
+  const costLo=buy+other+rep.lo,costHi=buy+other+rep.hi;
+  const rng=(a,b)=>Math.round(a)===Math.round(b)?money(a):money(a)+" to "+money(b);
+  const prof=p=>{const lo=p-costHi,hi=p-costLo;const f=v=>(v<0?"−":"")+money(Math.abs(v));return Math.round(lo)===Math.round(hi)?f(lo):f(lo)+" to "+f(hi)};
+  const cls=p=>p-costHi>=0?"pos":p-costLo<0?"neg":"";
+  let rows=[["Bought for",buy?money(buy):"Not set"],["Other costs",money(other)],["Repairs"+(rep.priced?"":" (none priced)"),rng(rep.lo,rep.hi)],["Total cost",rng(costLo,costHi),"tot"]];
+  let h='<table class="ptab"><tbody>'+rows.map(r=>'<tr class="'+(r[2]||"")+'"><td>'+r[0]+'</td><td class="amt">'+r[1]+"</td></tr>").join("")+"</tbody></table>";
+  if(!buy){h+='<p class="note" style="margin-top:10px">Enter what you paid to see your profit.</p>';$("profitTable").innerHTML=h;return}
+  const prows=[];
+  if(sold)prows.push(["Sold for "+money(sold),prof(sold),cls(sold)]);
+  if(ask){prows.push(["At asking, "+money(ask),prof(ask),cls(ask)]);prows.push(["5% less, "+money(ask*.95),prof(ask*.95),cls(ask*.95)]);prows.push(["10% less, "+money(ask*.9),prof(ask*.9),cls(ask*.9)])}
+  h+='<h3 class="h3" style="margin-top:18px">Profit</h3><table class="ptab"><tbody>'+(prows.length?prows.map(r=>'<tr class="'+r[2]+'"><td>'+r[0]+'</td><td class="amt">'+r[1]+"</td></tr>").join(""):'<tr><td>Add an asking price to see profit</td><td></td></tr>')+'<tr class="tot"><td>Break-even price</td><td class="amt">'+rng(costLo,costHi)+"</td></tr></tbody></table>";
+  $("profitTable").innerHTML=h;
+}
+$("buyPrice").addEventListener("input",e=>{car().money.buy=e.target.value;touch();renderProfitTable()});
+$("askShow").addEventListener("input",e=>{const c=car();c.ad.price=e.target.value;$("ad-price").value=e.target.value;touch();updateAd();renderProfitTable()});
+$("costPresets").addEventListener("click",e=>{const b=e.target.closest("[data-cost]");if(!b)return;const c=car(),k={id:uid(),text:b.dataset.cost,amt:""};c.money.costs.push(k);touch();renderProfitForm();const el=document.querySelector('[data-cid="'+k.id+'"] [data-c='+(k.text?"amt":"text")+"]");if(el)el.focus()});
+$("costList").addEventListener("input",e=>{const f=e.target.dataset.c;if(!f)return;const row=e.target.closest("[data-cid]"),k=car().money.costs.find(x=>x.id===row.dataset.cid);if(!k)return;k[f]=e.target.value;touch();renderProfitTable()});
+$("costList").addEventListener("click",e=>{const b=e.target.closest("[data-rmc]");if(!b)return;const c=car();c.money.costs=c.money.costs.filter(k=>k.id!==b.dataset.rmc);touch();renderProfitForm()});
+
+/* ---------- bill of sale ---------- */
+function bosData(){
+  const c=car(),a=c.ad,b=c.bos;
+  return{seller:b.seller||"",sellerAddr:b.sellerAddr||"",buyer:b.buyer||"",buyerAddr:b.buyerAddr||"",date:b.date||todayISO(),price:b.price||(c.status==="sold"&&c.soldPrice)||a.price||"",pay:b.pay||"Cash",odo:b.odo||a.km||"",unit:a.unit||"km",asis:b.asis!==false,terms:b.terms||"",
+    vehicle:[a.year,a.make,a.model,a.trim].filter(Boolean).join(" "),vin:a.vin||"",colour:a.colour||"",lien:a.title==="paid"||a.title==="clean"?"The seller states the vehicle is free of all liens and debts.":a.title==="financed"?"The vehicle has an outstanding loan, which the seller will pay out from the sale proceeds.":""};
+}
+function fillBos(){
+  const d=bosData();
+  document.querySelectorAll("#bosForm [data-b]").forEach(el=>{const k=el.dataset.b;if(el.type==="checkbox")el.checked=!!d[k];else el.value=d[k]!=null?d[k]:""});
+  fillBuyerPick();bosMissing();
+}
+function fillBuyerPick(){
+  const sel=$("bos-pickBuyer"),c=car();sel.textContent="";
+  const o0=document.createElement("option");o0.value="";o0.textContent=c.leads.length?"Pick a buyer":"No buyers added yet";sel.appendChild(o0);
+  c.leads.filter(l=>(l.name||"").trim()).forEach(l=>{const o=document.createElement("option");o.value=l.id;o.textContent=l.name+(l.status==="sold"?" (bought it)":"");sel.appendChild(o)});
+}
+$("bos-pickBuyer").addEventListener("change",e=>{const c=car(),l=c.leads.find(x=>x.id===e.target.value);if(!l)return;c.bos.buyer=l.name;if(!c.bos.price){const sp=c.status==="sold"&&num(c.soldPrice)?c.soldPrice:num(l.offer)?l.offer:"";if(sp)c.bos.price=sp}touch();fillBos()});
+$("bosForm").addEventListener("input",e=>{const k=e.target.dataset.b;if(!k)return;car().bos[k]=e.target.type==="checkbox"?e.target.checked:e.target.value;touch();bosMissing()});
+$("bosForm").addEventListener("change",e=>{const k=e.target.dataset.b;if(!k)return;car().bos[k]=e.target.type==="checkbox"?e.target.checked:e.target.value;touch();bosMissing()});
+function bosMissing(){
+  const d=bosData(),miss=[];
+  if(!d.seller)miss.push("seller's name");if(!d.buyer)miss.push("buyer's name");if(!d.vin)miss.push("VIN (in the ad writer)");if(!d.vehicle)miss.push("year, make and model (in the ad writer)");if(!num(d.price))miss.push("price");
+  $("bosMissing").textContent=miss.length?"Still missing: "+miss.join(", ")+".":"Everything's filled in.";
+}
+function bosHTML(){
+  const d=bosData(),e=esc,price=num(d.price),odo=num(d.odo);
+  const dt=d.date?new Date(d.date+"T12:00:00").toLocaleDateString("en-CA",{year:"numeric",month:"long",day:"numeric"}):"";
+  const row=(k,v)=>"<tr><th>"+k+"</th><td>"+(v?e(v):"&nbsp;")+"</td></tr>";
+  return '<div class="bos"><h1>Bill of Sale: Motor Vehicle</h1><p>Date of sale: '+e(dt)+'</p>'
+    +"<h2>Vehicle</h2><table>"+row("Year, make, model",d.vehicle)+row("VIN",d.vin)+row("Colour",d.colour)+row("Odometer",odo?odo.toLocaleString("en-CA")+" "+d.unit:"")+"</table>"
+    +"<h2>Seller</h2><table>"+row("Name",d.seller)+row("Address",d.sellerAddr)+"</table>"
+    +"<h2>Buyer</h2><table>"+row("Name",d.buyer)+row("Address",d.buyerAddr)+"</table>"
+    +"<h2>Sale</h2><p>The seller sells the vehicle above to the buyer for "+(price?"<b>"+e(money(price))+"</b>":"$________")+", paid by "+e(d.pay.toLowerCase())+". The seller confirms receipt of this payment.</p>"
+    +(d.lien?"<p>"+e(d.lien)+"</p>":"")
+    +(d.asis?"<p>The vehicle is sold as is, with no warranty, express or implied. The buyer has had the chance to inspect it.</p>":"")
+    +"<p>The seller states the odometer reading above is accurate to the best of their knowledge.</p>"
+    +(d.terms?"<p>"+e(d.terms)+"</p>":"")
+    +'<div class="sig"><div><span></span>Seller signature</div><div><span></span>Date</div><div><span></span>Buyer signature</div><div><span></span>Date</div></div></div>';
+}
+function bosText(){
+  const d=bosData(),price=num(d.price),odo=num(d.odo);
+  return["BILL OF SALE: MOTOR VEHICLE","Date of sale: "+d.date,"","VEHICLE","Year, make, model: "+d.vehicle,"VIN: "+d.vin,"Colour: "+d.colour,"Odometer: "+(odo?odo.toLocaleString("en-CA")+" "+d.unit:""),"","SELLER","Name: "+d.seller,"Address: "+d.sellerAddr,"","BUYER","Name: "+d.buyer,"Address: "+d.buyerAddr,"","SALE","Price: "+(price?money(price):"")+", paid by "+d.pay.toLowerCase()+". The seller confirms receipt of this payment.",d.lien,d.asis?"Sold as is, with no warranty, express or implied. The buyer has had the chance to inspect it.":"","The seller states the odometer reading is accurate to the best of their knowledge.",d.terms,"","Seller signature: ____________________  Date: __________","Buyer signature:  ____________________  Date: __________"].filter(x=>x!=="").join("\n");
+}
+const BOS_CSS="body{font:15px/1.5 Georgia,serif;color:#111;margin:32px}h1{font-size:22px;margin:0 0 6px}h2{font-size:15px;margin:18px 0 6px;text-transform:none;border-bottom:1px solid #999}table{border-collapse:collapse;width:100%}th{text-align:left;width:34%;font-weight:normal;color:#444;padding:4px 8px 4px 0;vertical-align:top}td{border-bottom:1px solid #ccc;padding:4px 0}.sig{display:grid;grid-template-columns:2fr 1fr;gap:28px 24px;margin-top:40px}.sig div{font-size:13px;color:#444}.sig span{display:block;border-bottom:1px solid #111;height:34px;margin-bottom:4px}";
+$("bosPrint").addEventListener("click",()=>{$("printArea").innerHTML="<style>@media print{"+BOS_CSS.replace(/body\{/,"#printArea{")+"}</style>"+bosHTML();try{window.print()}catch(e){toast("Printing isn't available here. Use Save as file instead.")}});
+$("bosSave").addEventListener("click",async()=>{const c=car();try{await DL.save({filename:slug(carName(c,app.cars.indexOf(c)))+"-bill-of-sale.html",data:"<!DOCTYPE html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Bill of sale</title><style>"+BOS_CSS+"</style></head><body>"+bosHTML()+"</body></html>"});toast("Saved. Open the file to print it.")}catch(e){toast("Couldn't save the file.")}});
+$("bosCopy").addEventListener("click",()=>copyText(bosText(),$("bosCopy"),"Copy text"));
+
+/* ---------- walk-around video ---------- */
+const PROMPTS=[[0,"Start at the front corner on the driver side"],[6,"Walk slowly along the driver side"],[14,"Swing around the back"],[20,"Walk along the passenger side"],[28,"Come around the front"],[34,"Open the driver door: dashboard and seats"],[42,"Back seats, then the trunk or cargo area"],[50,"Open the hood: engine bay"],[56,"Finish back at the front corner"]];
+const RV={stream:null,rec:null,chunks:[],t0:0,tick:0,mime:""};
+function vidRec(){return P[pk("video")]}
+function renderVideo(){
+  const r=vidRec();
+  if(!r){$("vidBox").innerHTML="";return}
+  const ext=/mp4/.test(r.type||"")?"mp4":"webm";
+  $("vidBox").innerHTML='<video class="vprev" controls playsinline src="'+r.url+'"></video><div class="row">'+(canShareFiles?'<button class="act" type="button" id="vidShare">Share video</button>':"")+'<button class="act sec" type="button" id="vidSave">Save video</button><button class="act sec" type="button" id="vidDel">Delete video</button></div>';
+  const vs=$("vidShare");if(vs)vs.onclick=async()=>{try{const f=new File([r.blob],"walkaround."+ext,{type:r.type||"video/webm"});if(!navigator.canShare({files:[f]})){toast("This video can't be shared directly. Use Save video.");return}await navigator.share({files:[f]})}catch(e){if(!e||e.name!=="AbortError")toast("Sharing didn't work. Try Save video.")}};
+  $("vidSave").onclick=async()=>{const c=car();try{await DL.save({filename:slug(carName(c,app.cars.indexOf(c)))+"-walkaround."+ext,data:r.blob});toast("Saved.")}catch(e){toast("Couldn't save the video.")}};
+  armBtn($("vidDel"),"Delete video",()=>{dropRec(pk("video"));renderVideo();toast("Video deleted.")});
+}
+async function openRec(){
+  if(!hasCam||!window.MediaRecorder){$("recMsg").textContent="This phone's browser can't record video here.";return}
+  $("recView").hidden=false;$("recTime").textContent="Ready";$("recPrompt").textContent=PROMPTS[0][1];$("recBtn").classList.remove("on");$("recBtn").setAttribute("aria-label","Start recording");
+  try{
+    RV.stream=await navigator.mediaDevices.getUserMedia({audio:$("recSound").checked,video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30}}});
+    const v=$("recVid");v.srcObject=RV.stream;await v.play().catch(()=>{});
+  }catch(e){closeRec();$("recMsg").textContent=e&&e.name==="NotAllowedError"?"Camera permission is off. Allow it in Chrome's site settings.":"Couldn't start the camera.";}
+}
+function startRec(){
+  if(!RV.stream)return;
+  RV.mime=["video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp9","video/webm"].find(m=>{try{return MediaRecorder.isTypeSupported(m)}catch(e){return false}})||"";
+  try{RV.rec=new MediaRecorder(RV.stream,RV.mime?{mimeType:RV.mime,videoBitsPerSecond:2500000}:{videoBitsPerSecond:2500000})}catch(e){toast("Recording isn't supported on this phone's browser.");return}
+  RV.chunks=[];RV.rec.ondataavailable=e=>{if(e.data&&e.data.size)RV.chunks.push(e.data)};
+  RV.rec.onstop=()=>{const type=(RV.rec&&RV.rec.mimeType)||RV.mime||"video/webm",blob=new Blob(RV.chunks,{type});closeRec();if(blob.size<1000){toast("The recording came out empty. Try again.");return}setRec(pk("video"),{blob,type,orig:null,kind:"video"});renderVideo();$("recMsg").textContent="Saved on this phone. Share or save it below.";};
+  RV.rec.start(1000);RV.t0=Date.now();$("recBtn").classList.add("on");$("recBtn").setAttribute("aria-label","Stop recording");
+  const step=()=>{const s=(Date.now()-RV.t0)/1000;$("recTime").textContent="Recording "+Math.floor(s)+"s of 60";let p=PROMPTS[0][1];PROMPTS.forEach(x=>{if(s>=x[0])p=x[1]});$("recPrompt").textContent=p;if(s>=60){stopRec();return}RV.tick=setTimeout(step,250)};step();
+}
+function stopRec(){clearTimeout(RV.tick);if(RV.rec&&RV.rec.state!=="inactive")RV.rec.stop()}
+function closeRec(){clearTimeout(RV.tick);if(RV.stream){RV.stream.getTracks().forEach(t=>t.stop());RV.stream=null}$("recVid").srcObject=null;$("recView").hidden=true}
+$("recOpen").addEventListener("click",openRec);
+$("recBtn").addEventListener("click",()=>{if(RV.rec&&RV.rec.state==="recording")stopRec();else startRec()});
+$("recClose").addEventListener("click",()=>{if(RV.rec&&RV.rec.state==="recording"){RV.rec.onstop=null;RV.rec.stop()}closeRec()});
+
+/* ---------- backup and restore ---------- */
+$("bkSave").addEventListener("click",async()=>{
+  const btn=$("bkSave");btn.disabled=true;$("bkMsg").textContent="Packing your backup…";
+  try{
+    const files=[],meta={};
+    Object.keys(P).forEach(k=>{const r=P[k];if(!r||r.kind==="video"||k.endsWith(":video"))return;const fn=k.replace(/[^a-zA-Z0-9._-]/g,"_");files.push({name:"photos/"+fn+".jpg",blob:r.blob});if(r.orig)files.push({name:"originals/"+fn+".jpg",blob:r.orig});meta[k]={file:fn,q:r.q||null,ai:r.ai||null,w:r.w,h:r.h,orig:!!r.orig}});
+    files.unshift({name:"data.json",blob:new Blob([JSON.stringify({app:"car-shots",version:1,saved:new Date().toISOString(),state:app,photos:meta})],{type:"application/json"})});
+    const zip=await makeZip(files);
+    await DL.save({filename:"car-shots-backup-"+todayISO()+".zip",data:zip});
+    $("bkMsg").textContent="Backup saved: "+app.cars.length+" car"+(app.cars.length===1?"":"s")+", "+Object.keys(meta).length+" photos. Keep it somewhere safe, like Google Drive.";
+  }catch(e){$("bkMsg").textContent="Couldn't make the backup. Try again."}
+  btn.disabled=false;
+});
+async function readZip(buf){
+  const dv=new DataView(buf),u8=new Uint8Array(buf),dec=new TextDecoder();
+  let eocd=-1;for(let i=buf.byteLength-22;i>=Math.max(0,buf.byteLength-65557);i--){if(dv.getUint32(i,true)===0x06054b50){eocd=i;break}}
+  if(eocd<0)throw new Error("not a zip");
+  const count=dv.getUint16(eocd+10,true);let p=dv.getUint32(eocd+16,true);const out={};
+  for(let i=0;i<count;i++){
+    if(dv.getUint32(p,true)!==0x02014b50)throw new Error("bad zip");
+    const method=dv.getUint16(p+10,true),csize=dv.getUint32(p+20,true),nlen=dv.getUint16(p+28,true),xlen=dv.getUint16(p+30,true),clen=dv.getUint16(p+32,true),loff=dv.getUint32(p+42,true);
+    const name=dec.decode(u8.subarray(p+46,p+46+nlen));
+    const lstart=loff+30+dv.getUint16(loff+26,true)+dv.getUint16(loff+28,true),raw=u8.slice(lstart,lstart+csize);
+    let data=raw;
+    if(method===8){if(!window.DecompressionStream)throw new Error("compressed");data=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer())}
+    else if(method!==0)throw new Error("method");
+    out[name]=data;p+=46+nlen+xlen+clen;
+  }
+  return out;
+}
+let pendingRestore=null;
+$("bkFile").addEventListener("change",async e=>{
+  const f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;
+  $("bkMsg").textContent="Reading the backup…";
+  try{
+    const files=await readZip(await f.arrayBuffer());
+    const j=JSON.parse(new TextDecoder().decode(files["data.json"]||new Uint8Array()));
+    if(!j||j.app!=="car-shots"||!j.state||!Array.isArray(j.state.cars))throw new Error("not ours");
+    pendingRestore={j,files};
+    $("bkMsg").textContent="This backup has "+j.state.cars.length+" car"+(j.state.cars.length===1?"":"s")+" and "+Object.keys(j.photos||{}).length+" photos, saved "+new Date(j.saved).toLocaleDateString("en-CA",{year:"numeric",month:"short",day:"numeric"})+". Restoring replaces everything on this phone.";
+    $("bkConfirmRow").hidden=false;
+  }catch(err){pendingRestore=null;$("bkConfirmRow").hidden=true;$("bkMsg").textContent="That file isn't a Car Shots backup, or it's damaged."}
+});
+$("bkCancel").addEventListener("click",()=>{pendingRestore=null;$("bkConfirmRow").hidden=true;$("bkMsg").textContent=""});
+$("bkConfirm").addEventListener("click",async()=>{
+  if(!pendingRestore)return;
+  const{j,files}=pendingRestore;$("bkConfirm").disabled=true;$("bkMsg").textContent="Restoring…";
+  try{
+    const ok=await idbTx(s=>{s.clear();Object.entries(j.photos||{}).forEach(([key,m])=>{const ph=files["photos/"+m.file+".jpg"];if(!ph)return;const og=m.orig?files["originals/"+m.file+".jpg"]:null;s.put({key,blob:new Blob([ph],{type:"image/jpeg"}),orig:og?new Blob([og],{type:"image/jpeg"}):null,q:m.q||null,ai:m.ai||null,w:m.w,h:m.h})})});
+    if(!ok)throw new Error("idb");
+    localStorage.setItem(KEY,JSON.stringify(j.state));
+    $("bkMsg").textContent="Restored. Reloading…";setTimeout(()=>location.reload(),600);
+  }catch(err){$("bkMsg").textContent="Restoring didn't work on this phone. Your current data wasn't changed if this happened before reloading.";$("bkConfirm").disabled=false}
+});
+
+function fillExtras(){renderBuyers();renderProfitForm();fillBos();renderVideo();renderAdClaude()}
+
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("vinView").hidden)closeVinScan();if(!$("recView").hidden&&!(RV.rec&&RV.rec.state==="recording"))closeRec()});
 
 /* ---------- start ---------- */
 renderCars();
