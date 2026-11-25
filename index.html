@@ -187,6 +187,25 @@ ol{list-style:none;margin:0;padding:0}
 .shutter:active{transform:scale(.94)}
 .camturn{position:absolute;left:50%;bottom:132px;transform:translateX(-50%);background:rgba(0,0,0,.6);padding:10px 16px;border-radius:12px;font-weight:600;text-align:center}
 .inst{margin-top:14px}
+.scan{background:var(--soft);border-radius:14px;padding:16px 18px;margin:14px 0 4px}
+.scan h3,.rhead b{font-family:"Barlow Condensed",Barlow,sans-serif;font-weight:700;font-size:22px;line-height:1.1}
+.scan h3{margin:0 0 4px}
+.keyrow{margin-top:12px}
+.fl-l{display:block;font-size:14px;font-weight:600;margin-bottom:4px}
+.pair2{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-bottom:8px}
+.sres{margin-top:12px;display:grid;gap:8px}
+.sitem{display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px;align-items:start;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+.sitem p{margin:2px 0 0;font-size:14px;color:var(--mute)}
+input[type=checkbox]{width:22px;height:22px;min-height:0;padding:0;margin:2px 0 0;accent-color:var(--red);flex:none}
+.rcard{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:12px}
+.rcard.fixed{opacity:.62}
+.rhead{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:10px}
+.aib{font-size:14px;font-weight:600;color:var(--red);white-space:nowrap}
+.rgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px}
+.chk{display:flex;gap:10px;align-items:center;font-size:15px;min-height:44px;cursor:pointer;align-self:end}
+.rrm{background:none;border:0;color:var(--mute);font-size:14px;text-decoration:underline;cursor:pointer;padding:6px 0;min-height:36px}
+.repsum{margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--soft);font-size:15px}
+.repsum b{font-family:"Barlow Condensed",Barlow,sans-serif;font-size:22px;display:block;line-height:1.1;margin-bottom:2px}
 .pkfig{margin:12px auto 8px;border-radius:12px;overflow:hidden;background:var(--soft);aspect-ratio:3/2;max-height:230px}
 .pkbtns{display:grid;gap:8px;margin-top:16px}
 .pkbtns .act{min-height:48px}
@@ -261,7 +280,7 @@ ol{list-style:none;margin:0;padding:0}
   </aside>
 
   <main class="right">
-    <nav class="jump" aria-label="Sections"><a href="#setup">Car</a><a href="#shots">Shots</a><a href="#photos">Photos</a><a href="#ad">Ad</a></nav>
+    <nav class="jump" aria-label="Sections"><a href="#setup">Car</a><a href="#shots">Shots</a><a href="#photos">Photos</a><a href="#repairs">Repairs</a><a href="#ad">Ad</a></nav>
 
     <section class="setup" id="setup">
       <div>
@@ -349,6 +368,27 @@ ol{list-style:none;margin:0;padding:0}
       <div id="gal"></div>
       <p class="note" id="miss" style="margin-top:12px"></p>
       <div class="row" id="zipRow" hidden><button class="act" type="button" id="shareBtn" hidden>Share photos</button><button class="act sec" type="button" id="zipBtn">Save as one zip file</button><span class="note" id="zipMsg"></span></div>
+    </section>
+
+    <section id="repairs">
+      <h2>Repair notes</h2>
+      <p class="note">Just for you, not in the ad. Each damage mark gets a suggested fix. Adjust it, add a price, and tick it off when it's done; fixed items drop out of the ad and the shot list.</p>
+      <div class="scan" id="scanBox">
+        <h3>Claude damage scan</h3>
+        <p class="note" id="scanNote"></p>
+        <div class="keyrow" id="keyRow" hidden>
+          <label class="fl-l" for="apiKey">Anthropic API key</label>
+          <div class="pair2"><input id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-..."><button class="act" type="button" id="keySave">Save key</button></div>
+          <p class="note">Get a key at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>. Each scan is a small pay-per-use charge on that account. The key stays on this phone. A scan sends your outside photos to Claude; nothing else leaves the phone.</p>
+          <div class="row" style="margin-top:8px"><button class="act sec" type="button" id="keyDel" hidden>Remove key</button></div>
+        </div>
+        <div class="row"><button class="act" type="button" id="scanBtn" hidden>Scan photos for damage</button><button class="act sec" type="button" id="keyBtn">Set up Claude scan</button><span class="note" id="scanMsg"></span></div>
+        <div id="scanRes"></div>
+      </div>
+      <div id="repList"></div>
+      <div class="row"><button class="act sec" type="button" id="addWork">Add other work</button></div>
+      <div class="repsum" id="repSum"></div>
+      <div class="row"><button class="act" type="button" id="repCopy">Copy notes</button><button class="act sec" type="button" id="repSave">Save as file</button><button class="act sec" type="button" id="repShare" hidden>Share notes</button></div>
     </section>
 
     <section id="ad">
@@ -546,8 +586,8 @@ const gIdx=g=>GROUPS.findIndex(x=>x[0]===g);
 const use=n=>{try{return window.claude&&typeof window.claude.use==="function"?Promise.resolve(window.claude.use(n)).catch(()=>null):Promise.resolve(null)}catch(e){return Promise.resolve(null)}};
 
 /* ---------- state ---------- */
-function blankCar(){return{id:uid(),type:"sedan",level:"ess",feats:[],done:{},dmg:[],ad:{unit:"km"},site:"fb"}}
-function exampleCar(){return{id:"ex1",type:"suv",level:"ess",feats:["heater","remote","tires2","records","heated","damage"],done:{fd:1,d:1,wheel:1},dmg:[{id:"m1",u:-.31,v:.5,kind:"rust"}],ad:{year:"2016",make:"Honda",model:"CR-V",trim:"EX",km:"148500",unit:"km",price:"18900",colour:"Silver",trans:"Automatic",drive:"AWD",owners:"2",acc:"none",title:"paid",reason:"Moving up to a minivan",loc:"",vin:"",notes:""},site:"fb"}}
+function blankCar(){return{id:uid(),type:"sedan",level:"ess",feats:[],done:{},dmg:[],work:[],ad:{unit:"km"},site:"fb"}}
+function exampleCar(){return{id:"ex1",type:"suv",level:"ess",feats:["heater","remote","tires2","records","heated","damage"],done:{fd:1,d:1,wheel:1},dmg:[{id:"m1",u:-.31,v:.5,kind:"rust",size:"m"}],work:[{id:"w1",text:"Full interior detail and shampoo the seats",pri:"fix",cost:"150",done:false}],ad:{year:"2016",make:"Honda",model:"CR-V",trim:"EX",km:"148500",unit:"km",price:"18900",colour:"Silver",trans:"Automatic",drive:"AWD",owners:"2",acc:"none",title:"paid",reason:"Moving up to a minivan",loc:"",vin:"",notes:""},site:"fb"}}
 function fix(c){
   if(!TYPES[c.type])c.type="sedan";
   if(c.level!=="full")c.level="ess";
@@ -557,6 +597,7 @@ function fix(c){
   c.done=c.done&&typeof c.done==="object"?c.done:{};
   c.dmg=Array.isArray(c.dmg)?c.dmg.filter(m=>m&&isFinite(m.u)&&isFinite(m.v)):[];
   c.ad=c.ad&&typeof c.ad==="object"?c.ad:{unit:"km"};
+  c.work=Array.isArray(c.work)?c.work.filter(w=>w&&w.id):[];
   if(!SITES[c.site])c.site="fb";
   if(!c.id)c.id=uid();
   return c;
@@ -624,6 +665,7 @@ function locName(u,v,t){
   if(u>-.22)return side+(t==="van"?" sliding door":" rear door");
   return side+" rear quarter panel";
 }
+const nameOf=(m,t)=>m.loc||locName(m.u,m.v,t);
 function visible(c,level){
   const T=c.type,F=new Set(c.feats),has=k=>k.split("|").some(x=>x==="t:"+T||F.has(x));
   const arr=SHOTS.filter(s=>{
@@ -634,8 +676,8 @@ function visible(c,level){
     const lv=s.up&&has(s.up)?1:s.lv;
     return lv===1||level==="full";
   });
-  c.dmg.forEach(m=>{
-    const loc=locName(m.u,m.v,T),k=KINDS[m.kind]||"Damage";
+  c.dmg.filter(m=>!m.done).forEach(m=>{
+    const loc=nameOf(m,T),k=KINDS[m.kind]||"Damage";
     arr.push({id:"dw-"+m.id,g:"flaw",lv:1,mk:1,mark:m.id,spot:"m-"+m.id,pr:12,fr:"side",fl:m.v<0?1:0,n:k+", "+loc+": wide",tip:"Step back so buyers can see where on the car it is."});
     arr.push({id:"dc-"+m.id,g:"flaw",lv:1,mk:1,spot:"m-"+m.id,pr:21,fr:"detail",n:k+", "+loc+": close-up",tip:"Fill the frame, with a finger or a coin beside it for scale."});
   });
@@ -692,6 +734,7 @@ function render(){
   $("pBar").style.width=(cur.length?dn/cur.length*100:0)+"%";
   $("ex").hidden=!app.ex;
   renderGallery();
+  renderRepairs();
   draw();
 }
 function renderFoot(){
@@ -810,7 +853,7 @@ function openSheet(pd){
   const c=car();pending=pd;
   const m=pd.id?c.dmg.find(d=>d.id===pd.id):null;
   const u=m?m.u:pd.u,v=m?m.v:pd.v;
-  $("sTitle").textContent=cap1(locName(u,v,c.type));
+  $("sTitle").textContent=cap1(m?nameOf(m,c.type):locName(u,v,c.type));
   $("sSub").textContent=m?"Change what it is, or remove the mark.":"What is it? This adds a wide shot and a close-up.";
   document.querySelectorAll("[data-kind]").forEach(b=>b.setAttribute("aria-pressed",!!m&&b.dataset.kind===m.kind));
   $("sDel").hidden=!m;
@@ -819,8 +862,8 @@ function openSheet(pd){
 $("kinds").addEventListener("click",e=>{
   const b=e.target.closest("[data-kind]");if(!b||!pending)return;
   const c=car();let label;
-  if(pending.id){const m=c.dmg.find(d=>d.id===pending.id);if(m)m.kind=b.dataset.kind;label=locName(m.u,m.v,c.type)}
-  else{const m={id:uid(),u:pending.u,v:pending.v,kind:b.dataset.kind};c.dmg.push(m);if(!c.feats.includes("damage"))c.feats.push("damage");label=locName(m.u,m.v,c.type);lastSpot="m-"+m.id}
+  if(pending.id){const m=c.dmg.find(d=>d.id===pending.id);if(m)m.kind=b.dataset.kind;label=nameOf(m,c.type)}
+  else{const m={id:uid(),u:pending.u,v:pending.v,kind:b.dataset.kind,size:"m"};c.dmg.push(m);if(!c.feats.includes("damage"))c.feats.push("damage");label=nameOf(m,c.type);lastSpot="m-"+m.id}
   touch();closeModal("sheet");setMark(false);render();updateAd();
   toast((KINDS[b.dataset.kind]||"Mark")+" on the "+label+": 2 shots added.");
 });
@@ -1133,7 +1176,8 @@ function buildAd(c){
   const ex=c.feats.map(f=>FEAT_AD[f]).filter(Boolean);if(ex.length)out.push("Comes with "+listJoin(ex)+".");
   const cs=[];
   if(a.acc==="none")cs.push("No accidents.");else if(a.acc==="minor")cs.push("One minor accident, properly repaired.");else if(a.acc==="major")cs.push("It has been in an accident; ask me for the details.");
-  if(c.dmg.length)cs.push("Known flaws, all shown in the photos: "+listJoin(c.dmg.map(m=>(KINDS[m.kind]||"damage").toLowerCase()+" on the "+locName(m.u,m.v,c.type)))+".");
+  const openD=c.dmg.filter(m=>!m.done);
+  if(openD.length)cs.push("Known flaws, all shown in the photos: "+listJoin(openD.map(m=>(KINDS[m.kind]||"damage").toLowerCase()+" on the "+nameOf(m,c.type)))+".");
   else if(c.feats.includes("damage"))cs.push("Some wear and damage, shown honestly in the photos.");
   if(cs.length)out.push(cs.join(" "));
   const ot=[];
@@ -1258,6 +1302,228 @@ addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;
 addEventListener("appinstalled",()=>{deferredInstall=null;$("installBtn").hidden=true;toast("Installed. Open it from your home screen.")});
 $("installBtn").addEventListener("click",async()=>{if(!deferredInstall)return;deferredInstall.prompt();try{await deferredInstall.userChoice}catch(e){}deferredInstall=null;$("installBtn").hidden=true});
 if("serviceWorker" in navigator)addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{})});
+
+/* ---------- repair notes (internal) ---------- */
+const PRI={fix:"Fix before listing",disc:"Disclose in the ad",opt:"Optional"};
+const SIZE={s:"Small (coin)",m:"Medium (hand)",l:"Large (bigger than a hand)"};
+const SIZE_SHORT={s:"small",m:"medium",l:"large"};
+const DEEP={dent:"Paint is cracked",scratch:"Fingernail catches (down to primer or metal)",rust:"Rusted through (holes)",chip:"Cracked, not just chipped",other:"Needs replacing"};
+const isGlass=(m,t)=>/windshield|rear window|glass|headlight|taillight|mirror/.test(nameOf(m,t));
+function recFix(m,t){
+  const big=m.size==="l",deep=!!m.deep,loc=nameOf(m,t);
+  switch(m.kind){
+    case"dent":return deep?"Body shop: pull or fill the dent, then prime, paint and blend the panel.":big?"Paintless dent repair may work if the metal isn't creased; otherwise a body shop pull and refinish.":"Paintless dent repair (PDR). No repaint needed.";
+    case"scratch":return!deep?"Machine polish with compound, then touch up any marks that remain with a paint pen.":big?"Respray the panel at a body shop.":"Touch-up paint (primer, colour, clear), then wet sand and polish to blend.";
+    case"rust":return(deep?"Cut out the rusted metal, weld in a patch or replacement panel, then refinish.":"Sand to bare metal, apply rust converter, prime and paint to match. Do it soon; it spreads.")+(/wheel arch|rocker/.test(loc)?" Check the inner liner and the other side too.":"");
+    case"chip":return isGlass(m,t)?(deep||big?"Replace the glass. A crack in the driver's view can fail a safety inspection.":"Resin chip repair before it spreads into a crack."):"Touch-up paint pen, sealed so rust can't start.";
+    default:return deep?"Replace the damaged part or trim piece.":"Clean, polish or recondition the area.";
+  }
+}
+function defPri(m,t){
+  if(m.kind==="rust")return"fix";
+  if(m.kind==="chip"&&isGlass(m,t)&&(m.deep||m.size==="l"))return"fix";
+  if(m.kind==="scratch"&&!m.deep)return"fix";
+  if(m.kind==="other")return"opt";
+  return"disc";
+}
+const priOf=(m,t)=>PRI[m.pri]?m.pri:defPri(m,t);
+const fixOf=(m,t)=>m.fix!=null&&m.fix!==""?m.fix:recFix(m,t);
+function costRange(str){const n=String(str||"").replace(/,/g,"").match(/\d+(\.\d+)?/g);if(!n)return null;const a=Number(n[0]),b=Number(n[1]!=null?n[1]:n[0]);return[Math.min(a,b),Math.max(a,b)]}
+const money=n=>"$"+Math.round(n).toLocaleString("en-CA");
+function opts(map,val){return Object.entries(map).map(([k,v])=>'<option value="'+k+'"'+(k===val?" selected":"")+">"+v+"</option>").join("")}
+function renderRepairs(){
+  const c=car(),T=c.type;let h="";
+  c.dmg.forEach((m,i)=>{
+    const id=m.id,k=m.kind in KINDS?m.kind:"other";
+    h+='<div class="rcard'+(m.done?" fixed":"")+'" data-mid="'+id+'"><div class="rhead"><b>'+(i+1)+". "+esc((KINDS[k]||"Damage")+", "+nameOf(m,T))+"</b>"+(m.ai?'<span class="aib">Found by Claude</span>':"")+'</div><div class="rgrid">'
+      +'<div class="fl"><label for="rs-'+id+'">Size</label><select id="rs-'+id+'" data-rf="size">'+opts(SIZE,m.size||"m")+"</select></div>"
+      +'<div class="fl"><label for="rp-'+id+'">Priority</label><select id="rp-'+id+'" data-rf="pri">'+opts(PRI,priOf(m,T))+"</select></div>"
+      +'<label class="chk full"><input type="checkbox" data-rf="deep"'+(m.deep?" checked":"")+"> "+esc(DEEP[k])+"</label>"
+      +'<div class="fl full"><label for="rf-'+id+'">What needs to be done</label><textarea id="rf-'+id+'" data-rf="fix" rows="3">'+esc(fixOf(m,T))+"</textarea></div>"
+      +'<div class="fl"><label for="rc-'+id+'">Estimate ($)</label><input id="rc-'+id+'" data-rf="cost" value="'+esc(m.cost||"")+'" placeholder="150 or 100-200" autocomplete="off"></div>'
+      +'<label class="chk"><input type="checkbox" data-rf="done"'+(m.done?" checked":"")+"> Fixed</label>"
+      +"</div>"+(m.note?'<p class="note" style="margin-top:8px">Claude noticed: '+esc(m.note)+"</p>":"")+'<button class="rrm" type="button" data-rmk="'+id+'">Remove this mark</button></div>';
+  });
+  c.work.forEach(w=>{
+    const id=w.id;
+    h+='<div class="rcard'+(w.done?" fixed":"")+'" data-wid="'+id+'"><div class="rgrid">'
+      +'<div class="fl full"><label for="rw-'+id+'">Other work</label><input id="rw-'+id+'" data-rf="text" value="'+esc(w.text||"")+'" placeholder="Replace wiper blades" autocomplete="off"></div>'
+      +'<div class="fl"><label for="rwp-'+id+'">Priority</label><select id="rwp-'+id+'" data-rf="pri">'+opts(PRI,PRI[w.pri]?w.pri:"fix")+"</select></div>"
+      +'<div class="fl"><label for="rwc-'+id+'">Estimate ($)</label><input id="rwc-'+id+'" data-rf="cost" value="'+esc(w.cost||"")+'" placeholder="40" autocomplete="off"></div>'
+      +'<label class="chk"><input type="checkbox" data-rf="done"'+(w.done?" checked":"")+"> Done</label>"
+      +'</div><button class="rrm" type="button" data-rmw="'+id+'">Remove</button></div>';
+  });
+  if(!h)h='<div class="empty">No damage marked yet. Tap Mark damage on the car drawing, or run a Claude scan on your photos.</div>';
+  $("repList").innerHTML=h;
+  renderRepSum();
+}
+function repItems(c){
+  const T=c.type;
+  return c.dmg.map(m=>({title:(KINDS[m.kind]||"Damage")+", "+nameOf(m,T),detail:SIZE_SHORT[m.size||"m"]+(m.deep?", "+DEEP[m.kind in KINDS?m.kind:"other"].toLowerCase():""),fix:fixOf(m,T),pri:priOf(m,T),cost:m.cost||"",done:!!m.done}))
+    .concat(c.work.filter(w=>(w.text||"").trim()).map(w=>({title:w.text.trim(),detail:"",fix:"",pri:PRI[w.pri]?w.pri:"fix",cost:w.cost||"",done:!!w.done})));
+}
+function totals(items){let lo=0,hi=0,priced=0;items.forEach(it=>{const r=costRange(it.cost);if(r){lo+=r[0];hi+=r[1];priced++}});return{lo,hi,priced}}
+function renderRepSum(){
+  const c=car(),items=repItems(c),open=items.filter(i=>!i.done),done=items.length-open.length;
+  const before=open.filter(i=>i.pri==="fix"),t=totals(open),tb=totals(before);
+  if(!items.length){$("repSum").innerHTML='<b>Nothing to fix yet</b>Marked damage and other work will add up here.';return}
+  const range=x=>x.lo===x.hi?money(x.lo):money(x.lo)+" to "+money(x.hi);
+  $("repSum").innerHTML="<b>"+open.length+" to do"+(done?", "+done+" done":"")+"</b>"
+    +esc(before.length+" to fix before listing"+(tb.priced?" ("+range(tb)+")":"")+". ")
+    +esc(t.priced?"Estimate for everything open: "+range(t)+(t.priced<open.length?", with "+(open.length-t.priced)+" item"+(open.length-t.priced===1?"":"s")+" not priced yet.":"."):"Add prices to see a total.");
+}
+function repText(c){
+  const items=repItems(c),open=items.filter(i=>!i.done),fixed=items.filter(i=>i.done),t=totals(open);
+  let s="REPAIR NOTES: "+carName(c,app.cars.indexOf(c))+"\nInternal, not for the ad. "+new Date().toLocaleDateString("en-CA",{year:"numeric",month:"short",day:"numeric"})+"\n";
+  const dot=x=>/[.!?]$/.test(x)?x:x+".",line=it=>"- "+it.title+(it.detail?" ("+it.detail+")":"")+(it.fix?": "+dot(it.fix.trim()):".")+(costRange(it.cost)?" Estimate $"+it.cost.trim()+".":"");
+  Object.keys(PRI).forEach(k=>{const g=open.filter(i=>i.pri===k);if(g.length)s+="\n"+PRI[k].toUpperCase()+"\n"+g.map(line).join("\n")+"\n"});
+  if(fixed.length)s+="\nDONE\n"+fixed.map(it=>"- "+it.title).join("\n")+"\n";
+  if(t.priced)s+="\nEstimated total for open items: "+(t.lo===t.hi?money(t.lo):money(t.lo)+" to "+money(t.hi))+(t.priced<open.length?" ("+(open.length-t.priced)+" not priced)":"")+"\n";
+  return s;
+}
+const repList=$("repList");
+function repTarget(el){const card=el.closest("[data-mid],[data-wid]");if(!card)return null;const c=car();return card.dataset.mid?{m:c.dmg.find(d=>d.id===card.dataset.mid)}:{w:c.work.find(d=>d.id===card.dataset.wid)}}
+repList.addEventListener("input",e=>{
+  const f=e.target.dataset.rf;if(!f||!["fix","cost","text"].includes(f))return;
+  const t=repTarget(e.target);if(!t)return;const o=t.m||t.w;if(!o)return;
+  o[f]=e.target.value;touch();renderRepSum();
+});
+repList.addEventListener("change",e=>{
+  const f=e.target.dataset.rf;if(!f||["fix","cost","text"].includes(f)){if(f==="text")updateAd();return}
+  const t=repTarget(e.target);if(!t)return;const o=t.m||t.w;if(!o)return;
+  if(e.target.type==="checkbox")o[f]=e.target.checked;else o[f]=e.target.value;
+  touch();
+  if(f==="done"&&t.m){render();updateAd();toast(o.done?"Marked fixed. It's out of the ad and the shot list.":"Back on the to-do list.")}
+  else if(f==="done"){renderRepairs()}
+  else if(f==="pri")renderRepSum();
+  else renderRepairs();
+});
+repList.addEventListener("click",e=>{
+  const a=e.target.closest("[data-rmk]");if(a){removeMark(a.dataset.rmk);return}
+  const b=e.target.closest("[data-rmw]");if(b){const c=car();c.work=c.work.filter(w=>w.id!==b.dataset.rmw);touch();renderRepairs()}
+});
+$("addWork").addEventListener("click",()=>{const c=car(),w={id:uid(),text:"",pri:"fix",cost:"",done:false};c.work.push(w);touch();renderRepairs();const el=$("rw-"+w.id);if(el)el.focus()});
+$("repCopy").addEventListener("click",()=>copyText(repText(car()),$("repCopy"),"Copy notes"));
+$("repSave").addEventListener("click",async()=>{const c=car();try{await DL.save({filename:slug(carName(c,app.cars.indexOf(c)))+"-repair-notes.txt",data:repText(c)});toast("Saved.")}catch(e){toast("Couldn't save the file.")}});
+$("repShare").hidden=!navigator.share;
+$("repShare").addEventListener("click",async()=>{const c=car();try{await navigator.share({title:"Repair notes",text:repText(c)})}catch(e){}});
+
+/* ---------- Claude damage scan (your own API key) ---------- */
+const KEYK="car-shot-list-key";
+let apiKey="";try{apiKey=localStorage.getItem(KEYK)||""}catch(e){}
+let SR=[],scanning=false;
+function renderScanUI(){
+  $("scanNote").textContent=apiKey
+    ?"Claude looks at your outside photos and lists dents, scratches, rust and chips with a suggested fix and a rough price. You choose what gets added."
+    :"Optional. Claude can look at your photos and find damage for you. It needs your own Anthropic API key, which is a paid account separate from your Claude subscription.";
+  $("scanBtn").hidden=!apiKey;
+  $("keyBtn").textContent=apiKey?"Change key":"Set up Claude scan";
+  $("keyDel").hidden=!apiKey;
+}
+$("keyBtn").addEventListener("click",()=>{$("keyRow").hidden=!$("keyRow").hidden;if(!$("keyRow").hidden)$("apiKey").focus()});
+$("keySave").addEventListener("click",()=>{
+  const v=$("apiKey").value.trim();
+  if(!/^sk-ant-/.test(v)){$("scanMsg").textContent="That doesn't look like an Anthropic API key. They start with sk-ant-.";return}
+  apiKey=v;try{localStorage.setItem(KEYK,v)}catch(e){}
+  $("apiKey").value="";$("keyRow").hidden=true;$("scanMsg").textContent="Key saved on this phone.";renderScanUI();
+});
+$("keyDel").addEventListener("click",()=>{apiKey="";try{localStorage.removeItem(KEYK)}catch(e){}$("keyRow").hidden=true;$("scanMsg").textContent="Key removed.";renderScanUI()});
+const PANELS={"front bumper":[.47,0,1],"hood":[.36,0,1],"windshield":["ws",0,1],"roof":["roof",0,1],"rear window":["rw",0,1],"trunk lid":[-.45,0,1],"liftgate":[-.45,0,1],"tailgate":[-.45,0,1],"truck bed":[-.3,0,1],"rear bumper":[-.48,0,1],"front fender":[.38,.5],"front door":[.14,.5],"rear door":[-.1,.5],"sliding door":[-.1,.5],"rear quarter panel":[-.38,.5],"front wheel":[.31,.5],"rear wheel":[-.31,.5],"rocker panel":[.02,.5],"mirror":["mir",.5],"headlight":[.46,.3],"taillight":[-.47,.3]};
+function placeFor(panel,side,t,existing){
+  const T=TYPES[t]||TYPES.sedan,p=PANELS[panel]||[0,.5];
+  let u=p[0]==="ws"?(T.ws0+T.ws1)/2:p[0]==="roof"?(T.ws1+T.re)/2:p[0]==="rw"?(T.re+T.rg)/2:p[0]==="mir"?T.ws0-.01:p[0];
+  if(T.bed!=null&&panel==="truck bed")u=(-.47+T.bed)/2;
+  const sg=side==="driver"?-1:side==="passenger"?1:0;
+  let v=p[2]?0:sg*p[1];
+  for(let i=0;i<6&&existing.some(m=>Math.abs(m.u-u)<.04&&Math.abs(m.v-v)<.08);i++)u-=.05;
+  return{u:Math.max(-.5,Math.min(.5,u)),v};
+}
+const KMAP={dent:"dent",scratch:"scratch",scuff:"scratch","curb rash":"scratch",rust:"rust",chip:"chip",crack:"chip",other:"other"};
+function blobToB64(b){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]);r.onerror=()=>rej(r.error);r.readAsDataURL(b)})}
+async function apiImage(blob){
+  const im=await loadImg(blob),sc=Math.min(1,1568/Math.max(im.naturalWidth,im.naturalHeight));
+  const cv=document.createElement("canvas");cv.width=Math.round(im.naturalWidth*sc);cv.height=Math.round(im.naturalHeight*sc);
+  cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);
+  return blobToB64(await toBlob(cv,.85));
+}
+async function callClaude(content){
+  let last=null;
+  for(const model of["claude-sonnet-5-5","claude-sonnet-4-5"]){
+    let r;
+    try{r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"x-api-key":apiKey,"anthropic-version":"2023-06-01","content-type":"application/json","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model,max_tokens:3000,messages:[{role:"user",content}]})})}
+    catch(e){throw{status:0,msg:"No connection to Claude. Check your internet and try again."}}
+    let j=null;try{j=await r.json()}catch(e){}
+    if(r.ok)return j;
+    const type=j&&j.error&&j.error.type,msg=j&&j.error&&j.error.message||"";
+    if(r.status===404||type==="not_found_error"){last={status:r.status,type,msg};continue}
+    throw{status:r.status,type,msg};
+  }
+  throw last||{status:0,msg:""};
+}
+function parseJSON(text){
+  try{return JSON.parse(text)}catch(e){}
+  const a=text.indexOf("{"),b=text.lastIndexOf("}");
+  if(a>=0&&b>a){try{return JSON.parse(text.slice(a,b+1))}catch(e){}}
+  return null;
+}
+function scanError(e){
+  const st=e&&e.status;
+  if(st===401)return"Claude didn't accept the API key. Check it under Change key.";
+  if(st===403)return"This API key isn't allowed to do that. Check the key's permissions in the Anthropic console.";
+  if(st===429)return"Too many requests for this key right now. Wait a minute and try again.";
+  if(st===400&&/credit|balance|billing/i.test(e.msg||""))return"The Anthropic account needs credit before scans work.";
+  if(st===413)return"The photos were too large to send. Try again with fewer photos.";
+  if(st>=500)return"Claude is busy or having trouble. Try again shortly.";
+  return(e&&e.msg)||"The scan didn't work. Try again.";
+}
+$("scanBtn").addEventListener("click",async()=>{
+  if(scanning||!apiKey)return;
+  const c=car(),T=c.type;
+  const pics=cur.filter(s=>photo(s.id)&&["out","whl","flaw"].includes(s.g)).sort((a,b)=>a.pr-b.pr).slice(0,12).sort((a,b)=>a.n-b.n);
+  if(!pics.length){$("scanMsg").textContent="Take some outside photos first, then scan them.";return}
+  scanning=true;const btn=$("scanBtn");btn.disabled=true;btn.textContent="Scanning…";
+  $("scanMsg").textContent="Preparing "+pics.length+" photo"+(pics.length===1?"":"s")+"…";$("scanRes").innerHTML="";
+  try{
+    const content=[];
+    for(const s of pics)content.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:await apiImage(photo(s.id).blob)}});
+    const list=pics.map((s,i)=>(i+1)+". "+s.name).join("\n");
+    content.push({type:"text",text:"You are inspecting photos of a used "+TYPES[T].ad+" that the owner is getting ready to sell. Find visible exterior damage only: dents, scratches, scuffs, paint chips, rust, cracked or chipped glass or lights, and curb rash on wheels. Ignore dirt, water spots, reflections and shadows, and don't guess at damage you can't see. List each problem once, even if it shows in several photos.\n\nPhotos, in order:\n"+list+"\n\nName each location with one of these panels: "+Object.keys(PANELS).join(", ")+". Side is driver (the left side of a North American car), passenger, or center.\nFor each problem give a practical repair a local shop or the owner would do, and a rough price range in dollars at a typical independent shop.\n\nReply with only JSON like {\"items\":[{\"photo\":1,\"panel\":\"front door\",\"side\":\"driver\",\"kind\":\"dent\",\"size\":\"small\",\"deep\":false,\"confidence\":\"high\",\"fix\":\"Paintless dent repair\",\"cost_low\":100,\"cost_high\":200,\"note\":\"short detail of what you see\"}],\"summary\":\"one sentence\"}.\nkind is dent, scratch, rust, chip, crack or other. size is small (coin), medium (hand) or large. deep is true when the paint is broken through, metal is rusted through, or glass is cracked. confidence is high, medium or low. Use an empty items list if you see no damage."});
+    $("scanMsg").textContent="Claude is looking at "+pics.length+" photo"+(pics.length===1?"":"s")+". This can take up to a minute…";
+    const j=await callClaude(content);
+    const text=(j&&Array.isArray(j.content)?j.content:[]).filter(b=>b.type==="text").map(b=>b.text).join("");
+    const data=parseJSON(text);
+    if(!data||!Array.isArray(data.items))throw{status:0,msg:"Claude's answer didn't come through properly. Try again."};
+    SR=data.items.slice(0,20).map(it=>{
+      const panel=String(it.panel||"").toLowerCase().trim(),side=["driver","passenger","center"].includes(it.side)?it.side:"center";
+      const kind=KMAP[String(it.kind||"").toLowerCase()]||"other",size=it.size==="small"?"s":it.size==="large"?"l":"m";
+      const lo=Number(it.cost_low),hi=Number(it.cost_high);
+      return{panel,side,kind,size,deep:!!it.deep,conf:["high","medium","low"].includes(it.confidence)?it.confidence:"medium",
+        fix:String(it.fix||"").slice(0,240),note:String(it.note||"").slice(0,200),photo:Number(it.photo)||0,
+        cost:isFinite(lo)&&lo>0?(isFinite(hi)&&hi>lo?Math.round(lo)+"-"+Math.round(hi):String(Math.round(lo))):"",
+        label:(side!=="center"&&!(PANELS[panel]&&PANELS[panel][2])?side+" ":"")+(panel||"body"),pick:it.confidence!=="low"};
+    });
+    $("scanMsg").textContent=SR.length?"Claude found "+SR.length+" possible problem"+(SR.length===1?"":"s")+". "+(String(data.summary||"").slice(0,200)):"Claude didn't see any damage in these photos. "+String(data.summary||"").slice(0,200);
+    renderScanRes();
+  }catch(e){$("scanMsg").textContent=scanError(e)}
+  scanning=false;btn.disabled=false;btn.textContent="Scan photos for damage";
+});
+function renderScanRes(){
+  if(!SR.length){$("scanRes").innerHTML="";return}
+  $("scanRes").innerHTML='<div class="sres">'+SR.map((r,i)=>'<label class="sitem"><input type="checkbox" data-si="'+i+'"'+(r.pick?" checked":"")+"><span><b>"+esc((KINDS[r.kind]||"Damage")+", "+r.label)+"</b><p>"+esc(SIZE_SHORT[r.size]+(r.deep?", deep":"")+", "+r.conf+" confidence"+(r.photo?", photo "+r.photo:"")+(r.cost?", about $"+r.cost:""))+"</p>"+(r.fix?"<p>"+esc(r.fix)+"</p>":"")+"</span></label>").join("")+"</div>"
+    +'<div class="row"><button class="act" type="button" id="srAdd">Add selected to repair notes</button><button class="act sec" type="button" id="srDrop">Discard</button></div>';
+}
+$("scanRes").addEventListener("change",e=>{const i=e.target.dataset.si;if(i!=null&&SR[i])SR[i].pick=e.target.checked});
+$("scanRes").addEventListener("click",e=>{
+  if(e.target.id==="srDrop"){SR=[];renderScanRes();$("scanMsg").textContent="";return}
+  if(e.target.id!=="srAdd")return;
+  const c=car(),add=SR.filter(r=>r.pick);
+  if(!add.length){$("scanMsg").textContent="Tick at least one to add, or tap Discard.";return}
+  add.forEach(r=>{const pos=placeFor(r.panel,r.side,c.type,c.dmg);c.dmg.push({id:uid(),u:pos.u,v:pos.v,kind:r.kind,size:r.size,deep:r.deep,ai:1,loc:r.label,fix:r.fix||undefined,cost:r.cost,note:r.note})});
+  if(!c.feats.includes("damage"))c.feats.push("damage");
+  SR=[];touch();render();updateAd();renderScanRes();
+  $("scanMsg").textContent="Added "+add.length+". Each one is on the car map and has its own photos to take.";
+});
+renderScanUI();
 
 /* ---------- start ---------- */
 renderCars();
